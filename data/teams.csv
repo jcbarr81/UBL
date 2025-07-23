@@ -1,0 +1,4 @@
+team_id,name,city,abbreviation,division,stadium,primary_color,secondary_color,owner_id
+ARG,Archers,Buenos Aires,ARG,East,Estadio Nacional,Blue,White,USR001
+NYH,Highlanders,New York,NYH,East,Yankee Stadium,Navy,Gray,USR002
+LAX,Explorers,Los Angeles,LAX,West,Dodger Stadium,Dodger Blue,Silver,USR003
