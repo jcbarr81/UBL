@@ -2,92 +2,122 @@ import csv
 from models.player import Player
 from models.pitcher import Pitcher
 
+
+def _required_int(row, key):
+    value = row.get(key)
+    if value is None or value == "":
+        raise ValueError(f"Missing required field: {key}")
+    return int(value)
+
+
+def _optional_int(row, key, default=0):
+    value = row.get(key)
+    if value is None or value == "":
+        return default
+    return int(value)
+
+
 def load_players_from_csv(file_path):
     players = []
     with open(file_path, mode="r", newline="") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            is_pitcher = row["is_pitcher"].lower() == "true"
+            is_pitcher = row.get("is_pitcher", "").lower() == "true"
+
+            height = _required_int(row, "height")
+            weight = _required_int(row, "weight")
+            gf = _required_int(row, "gf")
 
             common_kwargs = {
                 "player_id": row["player_id"],
                 "first_name": row["first_name"],
                 "last_name": row["last_name"],
                 "birthdate": row["birthdate"],
-                "height": int(row["height"]),
-                "weight": int(row["weight"]),
+                "height": height,
+                "weight": weight,
                 "bats": row["bats"],
                 "primary_position": row["primary_position"],
-                "other_positions": row["other_positions"].split("|") if row["other_positions"] else [],
-                "gf": int(row["gf"]),
-                "injured": row["injured"].lower() == "true",
-                "injury_description": row["injury_description"] or None,
-                "return_date": row["return_date"] or None
+                "other_positions": row.get("other_positions", "").split("|") if row.get("other_positions") else [],
+                "gf": gf,
+                "injured": row.get("injured", "false").lower() == "true",
+                "injury_description": row.get("injury_description") or None,
+                "return_date": row.get("return_date") or None,
             }
 
             if is_pitcher:
+                endurance = _required_int(row, "endurance")
+                control = _required_int(row, "control")
+                hold_runner = _required_int(row, "hold_runner")
+                fb = _required_int(row, "fb")
+                cu = _required_int(row, "cu")
+                cb = _required_int(row, "cb")
+                sl = _required_int(row, "sl")
+                si = _required_int(row, "si")
+                scb = _required_int(row, "scb")
+                kn = _required_int(row, "kn")
+                arm = _optional_int(row, "arm")
+                fa = _optional_int(row, "fa")
                 player = Pitcher(
                     **common_kwargs,
-                    endurance=int(row["endurance"]),
-                    control=int(row["control"]),
-                    hold_runner=int(row["hold_runner"]),
-                    fb=int(row["fb"]),
-                    cu=int(row["cu"]),
-                    cb=int(row["cb"]),
-                    sl=int(row["sl"]),
-                    si=int(row["si"]),
-                    scb=int(row["scb"]),
-                    kn=int(row["kn"]),
+                    endurance=endurance,
+                    control=control,
+                    hold_runner=hold_runner,
+                    fb=fb,
+                    cu=cu,
+                    cb=cb,
+                    sl=sl,
+                    si=si,
+                    scb=scb,
+                    kn=kn,
+                    arm=arm,
+                    fa=fa,
                     potential={
-                        "gf": int(row.get("pot_gf", row.get("gf", 0))),
-                        "fb": int(row.get("pot_fb", row.get("fb", 0))),
-                        "cu": int(row.get("pot_cu", row.get("cu", 0))),
-                        "cb": int(row.get("pot_cb", row.get("cb", 0))),
-                        "sl": int(row.get("pot_sl", row.get("sl", 0))),
-                        "si": int(row.get("pot_si", row.get("si", 0))),
-                        "scb": int(row.get("pot_scb", row.get("scb", 0))),
-                        "kn": int(row.get("pot_kn", row.get("kn", 0))),
-                        "control": int(row.get("pot_control", row.get("control", 0))),
-                        "endurance": int(row.get("pot_endurance", row.get("endurance", 0))),
-                        "hold_runner": int(row.get("pot_hold_runner", row.get("hold_runner", 0))),
-                        "arm": int(row.get("pot_arm", row.get("arm", 0))),
-                        "fa": int(row.get("pot_fa", row.get("fa", 0)))
-                    }
+                        "gf": _optional_int(row, "pot_gf", gf),
+                        "fb": _optional_int(row, "pot_fb", fb),
+                        "cu": _optional_int(row, "pot_cu", cu),
+                        "cb": _optional_int(row, "pot_cb", cb),
+                        "sl": _optional_int(row, "pot_sl", sl),
+                        "si": _optional_int(row, "pot_si", si),
+                        "scb": _optional_int(row, "pot_scb", scb),
+                        "kn": _optional_int(row, "pot_kn", kn),
+                        "control": _optional_int(row, "pot_control", control),
+                        "endurance": _optional_int(row, "pot_endurance", endurance),
+                        "hold_runner": _optional_int(row, "pot_hold_runner", hold_runner),
+                        "arm": _optional_int(row, "pot_arm", arm),
+                        "fa": _optional_int(row, "pot_fa", fa),
+                    },
                 )
             else:
+                ch = _required_int(row, "ch")
+                ph = _required_int(row, "ph")
+                sp = _required_int(row, "sp")
+                pl = _required_int(row, "pl")
+                vl = _required_int(row, "vl")
+                sc = _required_int(row, "sc")
+                fa = _required_int(row, "fa")
+                arm = _required_int(row, "arm")
                 player = Player(
                     **common_kwargs,
-                    ch=int(row["ch"]),
-                    ph=int(row["ph"]),
-                    sp=int(row["sp"]),
-                    pl=int(row["pl"]),
-                    vl=int(row["vl"]),
-                    sc=int(row["sc"]),
-                    fa=int(row["fa"]),
-                    arm=int(row["arm"]),
+                    ch=ch,
+                    ph=ph,
+                    sp=sp,
+                    pl=pl,
+                    vl=vl,
+                    sc=sc,
+                    fa=fa,
+                    arm=arm,
                     potential={
-                        "ch": int(row["pot_ch"]),
-                        "ph": int(row["pot_ph"]),
-                        "sp": int(row["pot_sp"]),
-                        "gf": int(row["pot_gf"]),
-                        "pl": int(row["pot_pl"]),
-                        "vl": int(row["pot_vl"]),
-                        "sc": int(row["pot_sc"]),
-                        "fa": int(row["pot_fa"]),
-                        "arm": int(row["pot_arm"]),
-                    }
+                        "ch": _optional_int(row, "pot_ch", ch),
+                        "ph": _optional_int(row, "pot_ph", ph),
+                        "sp": _optional_int(row, "pot_sp", sp),
+                        "gf": _optional_int(row, "pot_gf", gf),
+                        "pl": _optional_int(row, "pot_pl", pl),
+                        "vl": _optional_int(row, "pot_vl", vl),
+                        "sc": _optional_int(row, "pot_sc", sc),
+                        "fa": _optional_int(row, "pot_fa", fa),
+                        "arm": _optional_int(row, "pot_arm", arm),
+                    },
                 )
-
-            if is_pitcher:
-                # For SP and RP, show Arm (AS), Control (CO), Endurance (EN)
-                player.arm = int(row.get("arm", 0))
-                player.control = int(row.get("control", 0))
-                player.endurance = int(row.get("endurance", 0))
-            else:
-                # For batters, show CH/PH/SP
-                player.ch = int(row.get("ch", 0))
-                player.ph = int(row.get("ph", 0))
-                player.sp = int(row.get("sp", 0))
 
             players.append(player)
     return players
