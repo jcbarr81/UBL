@@ -22,7 +22,8 @@ def load_players_from_csv(file_path):
     with open(file_path, mode="r", newline="") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            is_pitcher = row.get("is_pitcher", "").lower() == "true"
+            is_pitcher_value = row.get("is_pitcher", "").lower()
+            is_pitcher = is_pitcher_value in ("true", "1")
 
             height = _required_int(row, "height")
             weight = _required_int(row, "weight")
