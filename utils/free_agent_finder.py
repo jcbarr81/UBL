@@ -9,9 +9,11 @@ def find_free_agents(players, roster_dir="data/rosters"):
     for filename in os.listdir(roster_dir):
         if filename.endswith(".csv"):
             with open(os.path.join(roster_dir, filename), mode="r", newline="") as f:
-                reader = csv.DictReader(f)
+                reader = csv.reader(f)
+                next(reader, None)  # skip header if present
                 for row in reader:
-                    assigned_ids.add(row["player_id"])
+                    if row:
+                        assigned_ids.add(row[0].strip())
 
     # Return only those players not assigned to any team
     return [p for p in players if p.player_id not in assigned_ids]
