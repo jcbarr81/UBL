@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from models.base_player import BasePlayer
 
+
 @dataclass
 class Pitcher(BasePlayer):
     endurance: int = 0
@@ -19,20 +20,5 @@ class Pitcher(BasePlayer):
     arm: int = 0
     fa: int = 0
 
-    # Extended potential ratings
-    pot_control: int = 0
-    pot_endurance: int = 0
-    pot_hold_runner: int = 0
-
-    pot_fb: int = 0
-    pot_cu: int = 0
-    pot_cb: int = 0
-    pot_sl: int = 0
-    pot_si: int = 0
-    pot_scb: int = 0
-    pot_kn: int = 0
-
-    pot_arm: int = 0
-    pot_fa: int = 0
-
-    potential: dict = field(default_factory=dict)  # Optional legacy fallback
+    # Stores potential ratings keyed by rating name
+    potential: dict = field(default_factory=dict)
