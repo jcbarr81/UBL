@@ -31,7 +31,7 @@ def save_players_to_csv(players, file_path):
                 "bats": p.bats,
                 "primary_position": p.primary_position,
                 "other_positions": "|".join(p.other_positions),
-                "is_pitcher": str(is_pitcher),
+                "is_pitcher": "1" if is_pitcher else "0",
                 "injured": str(p.injured),
                 "injury_description": p.injury_description or "",
                 "return_date": p.return_date or ""
