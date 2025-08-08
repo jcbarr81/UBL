@@ -10,6 +10,8 @@ def save_players_to_csv(players, file_path):
         "endurance", "control", "hold_runner",
         "fb", "cu", "cb", "sl", "si", "scb", "kn",
         "pot_ch", "pot_ph", "pot_sp", "pot_gf", "pot_pl", "pot_vl", "pot_sc", "pot_fa", "pot_arm",
+        "pot_control", "pot_endurance", "pot_hold_runner",
+        "pot_fb", "pot_cu", "pot_cb", "pot_sl", "pot_si", "pot_scb", "pot_kn",
         "injured", "injury_description", "return_date"
     ]
 
@@ -43,7 +45,19 @@ def save_players_to_csv(players, file_path):
                     "hold_runner": p.hold_runner,
                     "fb": p.fb, "cu": p.cu, "cb": p.cb, "sl": p.sl,
                     "si": p.si, "scb": p.scb, "kn": p.kn,
-                    "pot_gf": p.potential.get("gf", p.gf)
+                    "pot_gf": p.potential.get("gf", p.gf),
+                    "pot_control": p.potential.get("control", p.control),
+                    "pot_endurance": p.potential.get("endurance", p.endurance),
+                    "pot_hold_runner": p.potential.get("hold_runner", p.hold_runner),
+                    "pot_fb": p.potential.get("fb", p.fb),
+                    "pot_cu": p.potential.get("cu", p.cu),
+                    "pot_cb": p.potential.get("cb", p.cb),
+                    "pot_sl": p.potential.get("sl", p.sl),
+                    "pot_si": p.potential.get("si", p.si),
+                    "pot_scb": p.potential.get("scb", p.scb),
+                    "pot_kn": p.potential.get("kn", p.kn),
+                    "pot_arm": p.potential.get("arm", p.arm),
+                    "pot_fa": p.potential.get("fa", p.fa)
                 })
             else:
                 row.update({
