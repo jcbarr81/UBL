@@ -3,16 +3,20 @@ import random
 import uuid
 from datetime import datetime, timedelta
 from typing import Dict, List
-import pandas as pd
+# pandas is optional; fall back to simple names if unavailable
+try:
+    import pandas as pd  # type: ignore
+except Exception:  # pragma: no cover - handled by fallback
+    pd = None
 import os
 
 # Constants
 base_dir = os.path.dirname(os.path.abspath(__file__))
 NAME_PATH = os.path.join(base_dir, "..", "data", "names.csv")
-if os.path.exists(NAME_PATH):
+if pd is not None and os.path.exists(NAME_PATH):
     name_df = pd.read_csv(NAME_PATH)
     grouped_names = name_df.groupby("ethnicity")
-else:
+else:  # pragma: no cover - fallback when pandas or file missing
     grouped_names = None
 
     
