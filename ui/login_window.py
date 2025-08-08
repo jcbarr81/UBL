@@ -22,8 +22,10 @@ class LoginWindow(QWidget):
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Password")
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.username_input.setFocus()
 
         self.login_button = QPushButton("Login")
+        self.login_button.setDefault(True)
         self.login_button.clicked.connect(self.handle_login)
 
         layout = QVBoxLayout()
@@ -33,6 +35,10 @@ class LoginWindow(QWidget):
         layout.addWidget(self.password_input)
         layout.addWidget(self.login_button)
         self.setLayout(layout)
+
+        # Connect returnPressed signal to login
+        self.username_input.returnPressed.connect(self.handle_login)
+        self.password_input.returnPressed.connect(self.handle_login)
 
         self.dashboard = None
 
@@ -64,6 +70,8 @@ class LoginWindow(QWidget):
         else:
             QMessageBox.warning(self, "Error", "Unrecognized role.")
             return
+
+        self.dashboard.resize(1000, 800)
 
         self.dashboard.show()
         self.close()

@@ -39,7 +39,19 @@ def load_players_from_csv(file_path):
                     scb=int(row["scb"]),
                     kn=int(row["kn"]),
                     potential={
-                        "gf": int(row["pot_gf"]) if row["pot_gf"] else int(row["gf"])
+                        "gf": int(row.get("pot_gf", row.get("gf", 0))),
+                        "fb": int(row.get("pot_fb", row.get("fb", 0))),
+                        "cu": int(row.get("pot_cu", row.get("cu", 0))),
+                        "cb": int(row.get("pot_cb", row.get("cb", 0))),
+                        "sl": int(row.get("pot_sl", row.get("sl", 0))),
+                        "si": int(row.get("pot_si", row.get("si", 0))),
+                        "scb": int(row.get("pot_scb", row.get("scb", 0))),
+                        "kn": int(row.get("pot_kn", row.get("kn", 0))),
+                        "control": int(row.get("pot_control", row.get("control", 0))),
+                        "endurance": int(row.get("pot_endurance", row.get("endurance", 0))),
+                        "hold_runner": int(row.get("pot_hold_runner", row.get("hold_runner", 0))),
+                        "arm": int(row.get("pot_arm", row.get("arm", 0))),
+                        "fa": int(row.get("pot_fa", row.get("fa", 0)))
                     }
                 )
             else:
@@ -65,6 +77,17 @@ def load_players_from_csv(file_path):
                         "arm": int(row["pot_arm"]),
                     }
                 )
+
+            if is_pitcher:
+                # For SP and RP, show Arm (AS), Control (CO), Endurance (EN)
+                player.arm = int(row.get("arm", 0))
+                player.control = int(row.get("control", 0))
+                player.endurance = int(row.get("endurance", 0))
+            else:
+                # For batters, show CH/PH/SP
+                player.ch = int(row.get("ch", 0))
+                player.ph = int(row.get("ph", 0))
+                player.sp = int(row.get("sp", 0))
 
             players.append(player)
     return players
