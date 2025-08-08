@@ -1,0 +1,127 @@
+import os
+import csv
+from typing import Dict, List, Tuple
+from models.player import Player
+from models.pitcher import Pitcher
+from utils.player_writer import save_players_to_csv
+from logic.player_generator import generate_player
+
+
+def _abbr(city: str, name: str, existing: set) -> str:
+    base = (city[:1] + name[:2]).upper()
+    candidate = base
+    i = 1
+    while candidate in existing:
+        candidate = f"{base}{i}"
+        i += 1
+    existing.add(candidate)
+    return candidate
+
+
+def _dict_to_model(data: dict):
+    potentials = {k[4:]: v for k, v in data.items() if k.startswith("pot_")}
+    common = dict(
+        player_id=data.get("player_id"),
+        first_name=data.get("first_name"),
+        last_name=data.get("last_name"),
+        birthdate=str(data.get("birthdate")),
+        height=data.get("height", 0),
+        weight=data.get("weight", 0),
+        bats=data.get("bats", "R"),
+        primary_position=data.get("primary_position", ""),
+        other_positions=data.get("other_positions", "").split("|") if data.get("other_positions") else [],
+        gf=data.get("gf", 0),
+        injured=bool(data.get("injured", 0)),
+        injury_description=data.get("injury_description"),
+        return_date=data.get("return_date"),
+    )
+    if data.get("is_pitcher"):
+        return Pitcher(
+            **common,
+            endurance=data.get("endurance", 0),
+            control=data.get("control", 0),
+            hold_runner=data.get("hold_runner", 0),
+            fb=data.get("fb", 0),
+            cu=data.get("cu", 0),
+            cb=data.get("cb", 0),
+            sl=data.get("sl", 0),
+            si=data.get("si", 0),
+            scb=data.get("scb", 0),
+            kn=data.get("kn", 0),
+            arm=data.get("arm", 0),
+            fa=data.get("fa", 0),
+            potential=potentials,
+        )
+    else:
+        return Player(
+            **common,
+            ch=data.get("ch", 0),
+            ph=data.get("ph", 0),
+            sp=data.get("sp", 0),
+            pl=data.get("pl", 0),
+            vl=data.get("vl", 0),
+            sc=data.get("sc", 0),
+            fa=data.get("fa", 0),
+            arm=data.get("arm", 0),
+            potential=potentials,
+        )
+
+
+def create_league(base_dir: str, divisions: Dict[str, List[Tuple[str, str]]], roster_size: int = 25):
+    os.makedirs(base_dir, exist_ok=True)
+    rosters_dir = os.path.join(base_dir, "rosters")
+    os.makedirs(rosters_dir, exist_ok=True)
+
+    teams_path = os.path.join(base_dir, "teams.csv")
+    players_path = os.path.join(base_dir, "players.csv")
+
+    team_rows = []
+    all_players = []
+    existing_abbr = set()
+
+    num_pitchers = roster_size // 2
+    num_hitters = roster_size - num_pitchers
+
+    for division, teams in divisions.items():
+        for city, name in teams:
+            abbr = _abbr(city, name, existing_abbr)
+            team_rows.append({
+                "team_id": abbr,
+                "name": name,
+                "city": city,
+                "abbreviation": abbr,
+                "division": division,
+                "stadium": f"{name} Stadium",
+                "primary_color": "Blue",
+                "secondary_color": "White",
+                "owner_id": "",
+            })
+
+            roster_players = []
+            for _ in range(num_pitchers):
+                data = generate_player(is_pitcher=True)
+                data["is_pitcher"] = True
+                roster_players.append(data)
+            for _ in range(num_hitters):
+                data = generate_player(is_pitcher=False)
+                data["is_pitcher"] = False
+                roster_players.append(data)
+
+            all_players.extend(roster_players)
+
+            roster_file = os.path.join(rosters_dir, f"{abbr}.csv")
+            with open(roster_file, "w", newline="") as f:
+                writer = csv.writer(f)
+                for p in roster_players:
+                    writer.writerow([p["player_id"], "ACT"])
+
+    player_models = [_dict_to_model(p) for p in all_players]
+    save_players_to_csv(player_models, players_path)
+
+    with open(teams_path, "w", newline="") as f:
+        fieldnames = [
+            "team_id","name","city","abbreviation","division","stadium","primary_color","secondary_color","owner_id"
+        ]
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(team_rows)

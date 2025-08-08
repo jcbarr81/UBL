@@ -1,4 +1,14 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QDialog, QListWidget, QHBoxLayout, QMessageBox
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QPushButton,
+    QDialog,
+    QListWidget,
+    QHBoxLayout,
+    QMessageBox,
+    QInputDialog,
+)
 from utils.trade_utils import load_trades, save_trade
 from utils.news_logger import log_news_event
 from utils.roster_loader import load_roster
@@ -6,6 +16,8 @@ from utils.player_loader import load_players_from_csv
 from utils.team_loader import load_teams
 from models.trade import Trade
 import csv
+import os
+from logic.league_creator import create_league
 
 class AdminDashboard(QWidget):
     def __init__(self):
@@ -19,6 +31,10 @@ class AdminDashboard(QWidget):
         self.review_button = QPushButton("Review Trades")
         self.review_button.clicked.connect(self.open_trade_review)
         layout.addWidget(self.review_button)
+
+        self.create_league_button = QPushButton("Create League")
+        self.create_league_button.clicked.connect(self.open_create_league)
+        layout.addWidget(self.create_league_button)
 
         self.setLayout(layout)
 
@@ -103,3 +119,36 @@ class AdminDashboard(QWidget):
         layout.addLayout(btn_layout)
         dialog.setLayout(layout)
         dialog.exec()
+
+    def open_create_league(self):
+        div_text, ok = QInputDialog.getText(
+            self, "Divisions", "Enter division names separated by commas:"
+        )
+        if not ok or not div_text:
+            return
+        divisions = [d.strip() for d in div_text.split(",") if d.strip()]
+        if not divisions:
+            return
+
+        teams_per_div, ok = QInputDialog.getInt(
+            self, "Teams", "Teams per division:", 2, 1, 20
+        )
+        if not ok:
+            return
+
+        structure = {}
+        for div in divisions:
+            teams = []
+            for i in range(teams_per_div):
+                city, ok = QInputDialog.getText(self, "Team City", f"{div} division - Team {i+1} city:")
+                if not ok:
+                    return
+                name, ok = QInputDialog.getText(self, "Team Name", f"{div} division - Team {i+1} name:")
+                if not ok:
+                    return
+                teams.append((city, name))
+            structure[div] = teams
+
+        data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+        create_league(data_dir, structure)
+        QMessageBox.information(self, "League Created", "New league generated.")
