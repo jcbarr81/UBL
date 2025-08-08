@@ -8,7 +8,10 @@ import os
 from ui.admin_dashboard import AdminDashboard
 from ui.owner_dashboard import OwnerDashboard
 
-USER_FILE = os.path.join(os.path.dirname(__file__), "../data/users.txt")
+# Determine the path to the users file in a cross-platform way
+USER_FILE = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "data", "users.txt")
+)
 
 class LoginWindow(QWidget):
     def __init__(self):
