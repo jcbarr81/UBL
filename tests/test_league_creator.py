@@ -6,15 +6,17 @@ from models.pitcher import Pitcher
 
 def test_create_league_generates_files(tmp_path):
     divisions = {"East": [("CityA", "Cats"), ("CityB", "Dogs")]}
-    create_league(str(tmp_path), divisions, roster_size=10)
+    create_league(str(tmp_path), divisions, "Test League", roster_size=10)
 
     teams_path = tmp_path / "teams.csv"
     players_path = tmp_path / "players.csv"
     rosters_dir = tmp_path / "rosters"
+    league_path = tmp_path / "league.txt"
 
     assert teams_path.exists()
     assert players_path.exists()
     assert rosters_dir.is_dir()
+    assert league_path.exists()
 
     with open(teams_path, newline="") as f:
         teams = list(csv.DictReader(f))
@@ -30,6 +32,8 @@ def test_create_league_generates_files(tmp_path):
         with open(r_file) as f:
             lines = [line for line in f.read().strip().splitlines() if line]
         assert len(lines) == 10
+    with open(league_path) as f:
+        assert f.read() == "Test League"
 
 
 def test_dict_to_model_defaults_pitcher_arm_to_fastball():
