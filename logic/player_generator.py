@@ -230,6 +230,7 @@ def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
         arm = bounded_rating()
         fa = bounded_rating()
         control = bounded_rating()
+        movement = bounded_rating()
         endurance = bounded_rating()
         hold_runner = bounded_rating()
         pitch_ratings, pitch_pots = generate_pitches(throws, delivery, age)
@@ -248,6 +249,7 @@ def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
             "arm": arm,
             "fa": fa,
             "control": control,
+            "movement": movement,
             "endurance": endurance,
             "hold_runner": hold_runner,
             "role": role,
@@ -257,6 +259,7 @@ def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
             "primary_position": "P",
             "other_positions": assign_secondary_positions("P"),
             "pot_control": bounded_potential(control, age),
+            "pot_movement": bounded_potential(movement, age),
             "pot_endurance": bounded_potential(endurance, age),
             "pot_hold_runner": bounded_potential(hold_runner, age),
             "pot_arm": bounded_potential(arm, age),

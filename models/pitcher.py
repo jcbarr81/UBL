@@ -6,6 +6,7 @@ from models.base_player import BasePlayer
 class Pitcher(BasePlayer):
     endurance: int = 0
     control: int = 0
+    movement: int = 0
     hold_runner: int = 0
 
     fb: int = 0
