@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QComboBox,
 )
+from PyQt6.QtCore import Qt
 from utils.trade_utils import load_trades, save_trade
 from utils.news_logger import log_news_event
 from utils.roster_loader import load_roster
@@ -29,7 +30,13 @@ class AdminDashboard(QWidget):
         self.setGeometry(200, 200, 500, 300)
 
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Welcome to the Admin Dashboard"))
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
+
+        header = QLabel("Welcome to the Admin Dashboard")
+        header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header.setStyleSheet("font-size: 18px; font-weight: bold;")
+        layout.addWidget(header)
 
         self.review_button = QPushButton("Review Trades")
         self.review_button.clicked.connect(self.open_trade_review)
@@ -42,6 +49,13 @@ class AdminDashboard(QWidget):
         self.add_user_button = QPushButton("Add User")
         self.add_user_button.clicked.connect(self.open_add_user)
         layout.addWidget(self.add_user_button)
+
+        self.setStyleSheet(
+            """
+            QWidget {background-color: #f0f0f0; font-size: 14px;}
+            QPushButton {padding: 8px;}
+            """
+        )
 
         self.setLayout(layout)
 
@@ -180,6 +194,15 @@ class AdminDashboard(QWidget):
         dialog.exec()
 
     def open_create_league(self):
+        confirm = QMessageBox.question(
+            self,
+            "Overwrite Existing League?",
+            "Creating a new league will overwrite the current league and teams. Continue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+
         div_text, ok = QInputDialog.getText(
             self, "Divisions", "Enter division names separated by commas:"
         )
