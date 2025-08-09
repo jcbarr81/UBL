@@ -166,15 +166,21 @@ class LineupEditor(QDialog):
                 QMessageBox.warning(self, "Validation Error", f"{pdata['name']} is not eligible to play {position}.")
                 return
 
+        filename = self.get_lineup_filename()
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         for lbl in self.position_labels.values():
             lbl.setText("")
-        for i in range(9):
-            player_id = self.player_dropdowns[i].currentData()
-            position = self.position_dropdowns[i].currentText()
-            if position in self.position_labels:
-                self.position_labels[position].setText(self.players_dict.get(player_id, {}).get("name", ""))
+        with open(filename, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["order", "player_id", "position"])
+            for i in range(9):
+                player_id = self.player_dropdowns[i].currentData()
+                position = self.position_dropdowns[i].currentText()
+                writer.writerow([i + 1, player_id, position])
+                if position in self.position_labels:
+                    self.position_labels[position].setText(self.players_dict.get(player_id, {}).get("name", ""))
 
-        QMessageBox.information(self, "Lineup Validation", "All players are valid for their selected positions.")
+        QMessageBox.information(self, "Lineup Saved", "Lineup saved successfully.")
 
     def load_players_dict(self):
         players_file = os.path.join("data", "players.csv")
@@ -216,8 +222,14 @@ class LineupEditor(QDialog):
         self.update_bench_display()
 
     def get_lineup_filename(self):
-        suffix = "lhp" if self.current_view == "vs LHP" else "rhp"
-        return os.path.join("data", "rosters", f"{self.team_id}_{suffix}_lineup.csv")
+        """Return path to the lineup CSV for the current view.
+
+        Lineup files live in ``data/lineups`` with names like
+        ``TEAM_vs_lhp.csv`` or ``TEAM_vs_rhp.csv`` and use the columns
+        ``order,player_id,position``.
+        """
+        suffix = "vs_lhp" if self.current_view == "vs LHP" else "vs_rhp"
+        return os.path.join("data", "lineups", f"{self.team_id}_{suffix}.csv")
 
     def load_lineup(self):
         for lbl in self.position_labels.values():
@@ -227,21 +239,24 @@ class LineupEditor(QDialog):
             return
 
         with open(filename, "r", newline='', encoding="utf-8") as f:
-            reader = csv.reader(f)
-            for i, row in enumerate(reader):
-                if i >= 9:
-                    break
-                if len(row) >= 2:
-                    player_id = row[0].strip()
-                    position = row[1].strip()
-                    self.position_dropdowns[i].setCurrentText(position)
-                    self.update_player_dropdown(i)
-                    for index in range(self.player_dropdowns[i].count()):
-                        if self.player_dropdowns[i].itemData(index) == player_id:
-                            self.player_dropdowns[i].setCurrentIndex(index)
-                            if position in self.position_labels:
-                                self.position_labels[position].setText(self.players_dict.get(player_id, {}).get("name", ""))
-                            break
+            reader = csv.DictReader(f)
+            for row in reader:
+                try:
+                    i = int(row.get("order", 0)) - 1
+                except (TypeError, ValueError):
+                    continue
+                if not 0 <= i < 9:
+                    continue
+                player_id = row.get("player_id", "").strip()
+                position = row.get("position", "").strip()
+                self.position_dropdowns[i].setCurrentText(position)
+                self.update_player_dropdown(i)
+                for index in range(self.player_dropdowns[i].count()):
+                    if self.player_dropdowns[i].itemData(index) == player_id:
+                        self.player_dropdowns[i].setCurrentIndex(index)
+                        if position in self.position_labels:
+                            self.position_labels[position].setText(self.players_dict.get(player_id, {}).get("name", ""))
+                        break
 
     def update_bench_display(self):
         used_ids = set(self.player_dropdowns[i].currentData() for i in range(9))
