@@ -60,20 +60,7 @@ class AdminDashboard(QWidget):
 
         self.setStyleSheet(
             """
-            QWidget {background-color: #2c2c2c; color: #f0f0f0; font-size: 14px;}
-            QPushButton {
-                background-color: #444;
-                color: #f0f0f0;
-                padding: 8px;
-                border: 1px solid #555;
-            }
-            QPushButton:hover {background-color: #555;}
-            """
-        )
-
-        self.setStyleSheet(
-            """
-            QWidget {background-color: #f0f0f0; font-size: 14px;}
+            QWidget {background-color: #f0f0f0; color: #000000; font-size: 14px;}
             QPushButton {padding: 8px;}
             """
         )
