@@ -8,12 +8,15 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QMessageBox,
     QInputDialog,
+    QLineEdit,
+    QComboBox,
 )
 from utils.trade_utils import load_trades, save_trade
 from utils.news_logger import log_news_event
 from utils.roster_loader import load_roster
 from utils.player_loader import load_players_from_csv
 from utils.team_loader import load_teams
+from utils.user_manager import add_user
 from models.trade import Trade
 import csv
 import os
@@ -35,6 +38,10 @@ class AdminDashboard(QWidget):
         self.create_league_button = QPushButton("Create League")
         self.create_league_button.clicked.connect(self.open_create_league)
         layout.addWidget(self.create_league_button)
+
+        self.add_user_button = QPushButton("Add User")
+        self.add_user_button.clicked.connect(self.open_add_user)
+        layout.addWidget(self.add_user_button)
 
         self.setLayout(layout)
 
@@ -117,6 +124,56 @@ class AdminDashboard(QWidget):
 
         layout.addWidget(trade_list)
         layout.addLayout(btn_layout)
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    def open_add_user(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Add User")
+
+        layout = QVBoxLayout()
+
+        username_input = QLineEdit()
+        password_input = QLineEdit()
+        password_input.setEchoMode(QLineEdit.EchoMode.Password)
+        team_combo = QComboBox()
+
+        teams = load_teams("data/teams.csv")
+        for t in teams:
+            team_combo.addItem(f"{t.name} ({t.team_id})", userData=t.team_id)
+
+        layout.addWidget(QLabel("Username:"))
+        layout.addWidget(username_input)
+        layout.addWidget(QLabel("Password:"))
+        layout.addWidget(password_input)
+        layout.addWidget(QLabel("Team:"))
+        layout.addWidget(team_combo)
+
+        btn_layout = QHBoxLayout()
+        add_btn = QPushButton("Add")
+        cancel_btn = QPushButton("Cancel")
+        btn_layout.addWidget(add_btn)
+        btn_layout.addWidget(cancel_btn)
+        layout.addLayout(btn_layout)
+
+        def handle_add():
+            username = username_input.text().strip()
+            password = password_input.text().strip()
+            team_id = team_combo.currentData()
+            if not username or not password:
+                QMessageBox.warning(dialog, "Error", "Username and password required.")
+                return
+            try:
+                add_user(username, password, "owner", team_id)
+            except ValueError as e:
+                QMessageBox.warning(dialog, "Error", str(e))
+                return
+            QMessageBox.information(dialog, "Success", f"User {username} added.")
+            dialog.accept()
+
+        add_btn.clicked.connect(handle_add)
+        cancel_btn.clicked.connect(dialog.reject)
+
         dialog.setLayout(layout)
         dialog.exec()
 
