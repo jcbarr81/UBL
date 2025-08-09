@@ -138,6 +138,7 @@ class AdminDashboard(QWidget):
         password_input.setEchoMode(QLineEdit.EchoMode.Password)
         team_combo = QComboBox()
 
+
         data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
         teams = load_teams(os.path.join(data_dir, "teams.csv"))
         for t in teams:
