@@ -8,6 +8,8 @@ from PyQt6.QtWidgets import (
     QMessageBox,
 )
 
+from logic.team_name_generator import random_team
+
 
 class TeamEntryDialog(QDialog):
     """Dialog for entering team cities and nicknames."""
@@ -30,8 +32,13 @@ class TeamEntryDialog(QDialog):
                 name_edit.setPlaceholderText("Nickname")
                 row.addWidget(city_edit)
                 row.addWidget(name_edit)
+                random_btn = QPushButton("Randomize")
+                row.addWidget(random_btn)
                 layout.addLayout(row)
                 self._inputs[div].append((city_edit, name_edit))
+                random_btn.clicked.connect(
+                    lambda _, c=city_edit, n=name_edit: self._random_fill(c, n)
+                )
 
         btn_row = QHBoxLayout()
         save_btn = QPushButton("Save")
@@ -44,6 +51,12 @@ class TeamEntryDialog(QDialog):
         cancel_btn.clicked.connect(self.reject)
 
         self.setLayout(layout)
+
+    def _random_fill(self, city_edit: QLineEdit, name_edit: QLineEdit) -> None:
+        """Populate the provided fields with a random team name."""
+        city, nickname = random_team()
+        city_edit.setText(city)
+        name_edit.setText(nickname)
 
     def _handle_save(self):
         for fields in self._inputs.values():
