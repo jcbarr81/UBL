@@ -40,7 +40,7 @@ def load_players_from_csv(file_path):
                 "primary_position": row["primary_position"],
                 "other_positions": row.get("other_positions", "").split("|") if row.get("other_positions") else [],
                 "gf": gf,
-                "injured": row.get("injured", "false").lower() == "true",
+                "injured": (row.get("injured") or "false").strip().lower() == "true",
                 "injury_description": row.get("injury_description") or None,
                 "return_date": row.get("return_date") or None,
             }
