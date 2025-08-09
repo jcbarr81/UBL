@@ -38,17 +38,38 @@ class AdminDashboard(QWidget):
         header.setStyleSheet("font-size: 18px; font-weight: bold;")
         layout.addWidget(header)
 
+        layout.addStretch()
+
+        button_layout = QVBoxLayout()
+        button_layout.setSpacing(15)
+
         self.review_button = QPushButton("Review Trades")
         self.review_button.clicked.connect(self.open_trade_review)
-        layout.addWidget(self.review_button)
+        button_layout.addWidget(self.review_button, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.create_league_button = QPushButton("Create League")
         self.create_league_button.clicked.connect(self.open_create_league)
-        layout.addWidget(self.create_league_button)
+        button_layout.addWidget(self.create_league_button, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.add_user_button = QPushButton("Add User")
         self.add_user_button.clicked.connect(self.open_add_user)
-        layout.addWidget(self.add_user_button)
+        button_layout.addWidget(self.add_user_button, alignment=Qt.AlignmentFlag.AlignHCenter)
+
+        layout.addLayout(button_layout)
+        layout.addStretch()
+
+        self.setStyleSheet(
+            """
+            QWidget {background-color: #2c2c2c; color: #f0f0f0; font-size: 14px;}
+            QPushButton {
+                background-color: #444;
+                color: #f0f0f0;
+                padding: 8px;
+                border: 1px solid #555;
+            }
+            QPushButton:hover {background-color: #555;}
+            """
+        )
 
         self.setStyleSheet(
             """
