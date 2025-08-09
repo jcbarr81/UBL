@@ -43,6 +43,7 @@ def _dict_to_model(data: dict):
             **common,
             endurance=data.get("endurance", 0),
             control=data.get("control", 0),
+            movement=data.get("movement", 0),
             hold_runner=data.get("hold_runner", 0),
             fb=data.get("fb", 0),
             cu=data.get("cu", 0),

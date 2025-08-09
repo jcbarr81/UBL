@@ -48,6 +48,7 @@ def load_players_from_csv(file_path):
             if is_pitcher:
                 endurance = _required_int(row, "endurance")
                 control = _required_int(row, "control")
+                movement = _required_int(row, "movement")
                 hold_runner = _required_int(row, "hold_runner")
                 fb = _required_int(row, "fb")
                 cu = _required_int(row, "cu")
@@ -64,6 +65,7 @@ def load_players_from_csv(file_path):
                     **common_kwargs,
                     endurance=endurance,
                     control=control,
+                    movement=movement,
                     hold_runner=hold_runner,
                     fb=fb,
                     cu=cu,
@@ -84,6 +86,7 @@ def load_players_from_csv(file_path):
                         "scb": _optional_int(row, "pot_scb", scb),
                         "kn": _optional_int(row, "pot_kn", kn),
                         "control": _optional_int(row, "pot_control", control),
+                        "movement": _optional_int(row, "pot_movement", movement),
                         "endurance": _optional_int(row, "pot_endurance", endurance),
                         "hold_runner": _optional_int(row, "pot_hold_runner", hold_runner),
                         "arm": _optional_int(row, "pot_arm", arm),

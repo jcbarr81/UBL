@@ -51,6 +51,7 @@ def test_dict_to_model_defaults_pitcher_arm_to_fastball():
         "is_pitcher": True,
         "endurance": 50,
         "control": 60,
+        "movement": 55,
         "hold_runner": 40,
         "fb": 70,
         "cu": 60,
