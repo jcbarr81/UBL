@@ -211,6 +211,13 @@ class AdminDashboard(QWidget):
         if confirm != QMessageBox.StandardButton.Yes:
             return
 
+        league_name, ok = QInputDialog.getText(
+            self, "League Name", "Enter league name:"
+        )
+        if not ok or not league_name:
+            return
+        league_name = league_name.strip()
+
         div_text, ok = QInputDialog.getText(
             self, "Divisions", "Enter division names separated by commas:"
         )
@@ -240,5 +247,5 @@ class AdminDashboard(QWidget):
             structure[div] = teams
 
         data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
-        create_league(data_dir, structure)
+        create_league(data_dir, structure, league_name)
         QMessageBox.information(self, "League Created", "New league generated.")

@@ -70,13 +70,14 @@ def _dict_to_model(data: dict):
         )
 
 
-def create_league(base_dir: str, divisions: Dict[str, List[Tuple[str, str]]], roster_size: int = 25):
+def create_league(base_dir: str, divisions: Dict[str, List[Tuple[str, str]]], league_name: str, roster_size: int = 25):
     os.makedirs(base_dir, exist_ok=True)
     rosters_dir = os.path.join(base_dir, "rosters")
     os.makedirs(rosters_dir, exist_ok=True)
 
     teams_path = os.path.join(base_dir, "teams.csv")
     players_path = os.path.join(base_dir, "players.csv")
+    league_path = os.path.join(base_dir, "league.txt")
 
     team_rows = []
     all_players = []
@@ -128,3 +129,5 @@ def create_league(base_dir: str, divisions: Dict[str, List[Tuple[str, str]]], ro
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(team_rows)
+    with open(league_path, "w", newline="") as f:
+        f.write(league_name)
