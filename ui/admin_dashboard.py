@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QComboBox,
 )
 from PyQt6.QtCore import Qt
+from ui.team_entry_dialog import TeamEntryDialog
 from utils.trade_utils import load_trades, save_trade
 from utils.news_logger import log_news_event
 from utils.roster_loader import load_roster
@@ -233,19 +234,11 @@ class AdminDashboard(QWidget):
         if not ok:
             return
 
-        structure = {}
-        for div in divisions:
-            teams = []
-            for i in range(teams_per_div):
-                city, ok = QInputDialog.getText(self, "Team City", f"{div} division - Team {i+1} city:")
-                if not ok:
-                    return
-                name, ok = QInputDialog.getText(self, "Team Name", f"{div} division - Team {i+1} name:")
-                if not ok:
-                    return
-                teams.append((city, name))
-            structure[div] = teams
+        dialog = TeamEntryDialog(divisions, teams_per_div, self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
 
+        structure = dialog.get_structure()
         data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
         create_league(data_dir, structure, league_name)
         QMessageBox.information(self, "League Created", "New league generated.")
