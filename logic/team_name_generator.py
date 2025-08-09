@@ -8,7 +8,7 @@ entry.
 """
 
 import random
-from typing import List, Tuple
+from typing import List, Set, Tuple
 
 # Lists of sample cities and mascots.
 CITIES: List[str] = [
@@ -22,6 +22,28 @@ CITIES: List[str] = [
     "San Diego",
     "Dallas",
     "San Jose",
+    "Austin",
+    "Jacksonville",
+    "Fort Worth",
+    "Columbus",
+    "Charlotte",
+    "San Francisco",
+    "Indianapolis",
+    "Seattle",
+    "Denver",
+    "Washington",
+    "Boston",
+    "El Paso",
+    "Nashville",
+    "Detroit",
+    "Oklahoma City",
+    "Portland",
+    "Las Vegas",
+    "Memphis",
+    "Louisville",
+    "Baltimore",
+    "Milwaukee",
+    "Albuquerque",
 ]
 
 MASCOTS: List[str] = [
@@ -35,12 +57,61 @@ MASCOTS: List[str] = [
     "Hawks",
     "Rockets",
     "Pirates",
+    "Knights",
+    "Warriors",
+    "Panthers",
+    "Bulls",
+    "Kings",
+    "Giants",
+    "Falcons",
+    "Rangers",
+    "Thunder",
+    "Saints",
+    "Wildcats",
+    "Spartans",
+    "Hornets",
+    "Raiders",
+    "Royals",
+    "Dolphins",
+    "Chargers",
+    "Coyotes",
+    "Jets",
+    "Mariners",
+    "Chiefs",
+    "Cardinals",
 ]
 
-def random_team() -> Tuple[str, str]:
-    """Return a random `(city, mascot)` pair.
+# Track used names to ensure uniqueness during generation.
+_used_cities: Set[str] = set()
+_used_mascots: Set[str] = set()
 
-    The city is drawn from :data:`CITIES` and the mascot from :data:`MASCOTS`.
+
+def random_team() -> Tuple[str, str]:
+    """Return a random `(city, mascot)` pair without repeats.
+
+    Cities and mascots are removed from the available pool after use. A
+    :class:`RuntimeError` is raised if no unused names remain.
     """
 
-    return random.choice(CITIES), random.choice(MASCOTS)
+    available_cities = [c for c in CITIES if c not in _used_cities]
+    if not available_cities:
+        raise RuntimeError("No unused city names remain.")
+
+    available_mascots = [m for m in MASCOTS if m not in _used_mascots]
+    if not available_mascots:
+        raise RuntimeError("No unused mascot names remain.")
+
+    city = random.choice(available_cities)
+    mascot = random.choice(available_mascots)
+
+    _used_cities.add(city)
+    _used_mascots.add(mascot)
+
+    return city, mascot
+
+
+def reset_name_pool() -> None:
+    """Clear tracking of used cities and mascots."""
+
+    _used_cities.clear()
+    _used_mascots.clear()

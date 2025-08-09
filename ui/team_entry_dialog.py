@@ -54,7 +54,11 @@ class TeamEntryDialog(QDialog):
 
     def _random_fill(self, city_edit: QLineEdit, name_edit: QLineEdit) -> None:
         """Populate the provided fields with a random team name."""
-        city, nickname = random_team()
+        try:
+            city, nickname = random_team()
+        except RuntimeError as exc:
+            QMessageBox.warning(self, "Names Exhausted", str(exc))
+            return
         city_edit.setText(city)
         name_edit.setText(nickname)
 
