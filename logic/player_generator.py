@@ -1,8 +1,7 @@
 # ARR-inspired Player Generator Script
 import random
-import uuid
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict, List, Tuple
 # pandas is optional; fall back to simple names if unavailable
 try:
     import pandas as pd  # type: ignore
@@ -52,61 +51,188 @@ def generate_name() -> tuple[str, str]:
     else:
         return "John", "Doe"
 
-def assign_primary_position():
-    weights = {
-        "C": 10, "1B": 10, "2B": 12, "3B": 10,
-        "SS": 12, "LF": 12, "CF": 12, "RF": 12
-    }
-    return random.choices(list(weights.keys()), weights=weights.values())[0]
+PRIMARY_POSITION_WEIGHTS = {
+    "C": 19,
+    "1B": 15,
+    "2B": 14,
+    "SS": 13,
+    "3B": 14,
+    "LF": 16,
+    "CF": 13,
+    "RF": 16,
+}
 
-def assign_secondary_positions(primary):
-    weights = {
-        "C": 10, "1B": 10, "2B": 12, "3B": 10,
-        "SS": 12, "LF": 12, "CF": 12, "RF": 12
-    }
-    return "|".join(
-        random.sample([pos for pos in weights if pos != primary], k=random.choice([0, 1, 2]))
-    )
 
-def generate_pitches(bats: str, role: str, age: int):
-    base_pitches = ["fb", "cu", "cb", "sl", "si"]
-    rare_pitches = []
-    if bats == "L" and random.random() < 0.10:
-        rare_pitches.append("scb")
-    if random.random() < 0.02:
-        rare_pitches.append("kn")
+def assign_primary_position() -> str:
+    """Select a primary position using weights from the ARR tables."""
+    return random.choices(
+        list(PRIMARY_POSITION_WEIGHTS.keys()),
+        weights=PRIMARY_POSITION_WEIGHTS.values(),
+    )[0]
 
-    count = random.choices([2, 3, 4], weights=(0.1, 0.7, 0.2) if role == "SP" else (0.7, 0.2, 0.1))[0]
+
+BATS_THROWS: Dict[str, List[Tuple[str, str, int]]] = {
+    "P": [
+        ("R", "L", 1),
+        ("R", "R", 50),
+        ("L", "L", 25),
+        ("L", "R", 10),
+        ("S", "L", 4),
+        ("S", "R", 10),
+    ],
+    "C": [
+        ("R", "L", 0),
+        ("R", "R", 75),
+        ("L", "L", 0),
+        ("L", "R", 15),
+        ("S", "L", 0),
+        ("S", "R", 10),
+    ],
+    "1B": [
+        ("R", "L", 1),
+        ("R", "R", 40),
+        ("L", "L", 32),
+        ("L", "R", 13),
+        ("S", "L", 4),
+        ("S", "R", 10),
+    ],
+    "2B": [
+        ("R", "L", 0),
+        ("R", "R", 75),
+        ("L", "L", 0),
+        ("L", "R", 15),
+        ("S", "L", 0),
+        ("S", "R", 10),
+    ],
+    "3B": [
+        ("R", "L", 0),
+        ("R", "R", 75),
+        ("L", "L", 0),
+        ("L", "R", 15),
+        ("S", "L", 0),
+        ("S", "R", 10),
+    ],
+    "SS": [
+        ("R", "L", 0),
+        ("R", "R", 75),
+        ("L", "L", 0),
+        ("L", "R", 15),
+        ("S", "L", 0),
+        ("S", "R", 10),
+    ],
+    "LF": [
+        ("R", "L", 1),
+        ("R", "R", 50),
+        ("L", "L", 25),
+        ("L", "R", 10),
+        ("S", "L", 4),
+        ("S", "R", 10),
+    ],
+    "CF": [
+        ("R", "L", 1),
+        ("R", "R", 50),
+        ("L", "L", 25),
+        ("L", "R", 10),
+        ("S", "L", 4),
+        ("S", "R", 10),
+    ],
+    "RF": [
+        ("R", "L", 1),
+        ("R", "R", 50),
+        ("L", "L", 25),
+        ("L", "R", 10),
+        ("S", "L", 4),
+        ("S", "R", 10),
+    ],
+}
+
+
+def assign_bats_throws(primary: str) -> Tuple[str, str]:
+    combos = BATS_THROWS.get(primary, BATS_THROWS["1B"])
+    bats, throws, _ = random.choices(
+        combos, weights=[c[2] for c in combos]
+    )[0]
+    return bats, throws
+
+
+SECONDARY_POSITIONS: Dict[str, Dict[str, Dict[str, int]]] = {
+    "P": {"chance": 1, "weights": {"1B": 30, "LF": 25, "RF": 45}},
+    "C": {"chance": 2, "weights": {"1B": 30, "3B": 20, "LF": 20, "RF": 30}},
+    "1B": {"chance": 2, "weights": {"C": 5, "3B": 15, "LF": 50, "RF": 30}},
+    "2B": {"chance": 5, "weights": {"3B": 40, "SS": 50, "CF": 10}},
+    "3B": {
+        "chance": 5,
+        "weights": {"C": 5, "1B": 15, "2B": 20, "SS": 10, "LF": 25, "RF": 25},
+    },
+    "SS": {"chance": 5, "weights": {"2B": 50, "3B": 40, "CF": 10}},
+    "LF": {"chance": 9, "weights": {"C": 5, "1B": 25, "3B": 15, "CF": 20, "RF": 35}},
+    "CF": {"chance": 6, "weights": {"2B": 10, "SS": 10, "LF": 40, "RF": 40}},
+    "RF": {"chance": 9, "weights": {"C": 5, "1B": 25, "3B": 15, "LF": 35, "CF": 20}},
+}
+
+
+def assign_secondary_positions(primary: str) -> List[str]:
+    info = SECONDARY_POSITIONS.get(primary)
+    if not info:
+        return []
+    if random.randint(1, 100) > info["chance"]:
+        return []
+    positions = list(info["weights"].keys())
+    weights = list(info["weights"].values())
+    return [random.choices(positions, weights=weights)[0]]
+
+PITCH_LIST = ["fb", "si", "cu", "cb", "sl", "kn", "sc"]
+
+PITCH_WEIGHTS = {
+    ("L", "overhand"): {"fb": 512, "si": 112, "cu": 168, "cb": 164, "sl": 138, "kn": 1, "sc": 13},
+    ("L", "sidearm"): {"fb": 512, "si": 168, "cu": 112, "cb": 138, "sl": 164, "kn": 1, "sc": 11},
+    ("R", "overhand"): {"fb": 512, "si": 112, "cu": 168, "cb": 164, "sl": 138, "kn": 13, "sc": 1},
+    ("R", "sidearm"): {"fb": 512, "si": 168, "cu": 112, "cb": 138, "sl": 164, "kn": 13, "sc": 1},
+}
+
+
+def _weighted_choice(weight_dict: Dict[str, int]) -> str:
+    total = sum(weight_dict.values())
+    r = random.uniform(0, total)
+    upto = 0
+    for item, weight in weight_dict.items():
+        if upto + weight >= r:
+            return item
+        upto += weight
+    return item  # pragma: no cover
+
+
+def generate_pitches(throws: str, delivery: str, age: int):
+    weights = PITCH_WEIGHTS[(throws, delivery)].copy()
+    num_pitches = random.randint(2, 5)
     selected = ["fb"]
-    pool = list(set(base_pitches) - {"fb"})
-    random.shuffle(pool)
-    selected.extend(pool[:count - len(selected)])
+    weights.pop("fb", None)
+    for _ in range(num_pitches - 1):
+        pitch = _weighted_choice(weights)
+        selected.append(pitch)
+        weights.pop(pitch, None)
 
-    if len(selected) < count and rare_pitches:
-        selected.append(random.choice(rare_pitches))
-
-    all_pitches = base_pitches + ["scb", "kn"]
-    ratings = {p: bounded_rating() if p in selected else 0 for p in all_pitches}
-    potentials = {f"pot_{p}": bounded_potential(ratings[p], age) if p in selected else 0 for p in all_pitches}
+    ratings = {p: bounded_rating() if p in selected else 0 for p in PITCH_LIST}
+    potentials = {f"pot_{p}": bounded_potential(ratings[p], age) if p in selected else 0 for p in PITCH_LIST}
     return ratings, potentials
 
 def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
     birthdate, age = generate_birthdate((17, 21) if for_draft else (18, 38))
     first_name, last_name = generate_name()
     player_id = f"P{random.randint(1000, 9999)}"
-    bats = random.choice(["L", "R", "S"])
     height = random.randint(68, 78)
     weight = random.randint(160, 250)
 
     if is_pitcher:
+        bats, throws = assign_bats_throws("P")
         role = random.choice(["SP", "RP"])
-        delivery = random.choice(["overhand", "sidearm"])
+        delivery = random.choices(["overhand", "sidearm"], weights=[95, 5])[0]
         arm = bounded_rating()
         fa = bounded_rating()
         control = bounded_rating()
         endurance = bounded_rating()
         hold_runner = bounded_rating()
-        pitch_ratings, pitch_pots = generate_pitches(bats, role, age)
+        pitch_ratings, pitch_pots = generate_pitches(throws, delivery, age)
 
         player = {
             "first_name": first_name,
@@ -118,6 +244,7 @@ def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
             "is_pitcher": True,
             "birthdate": birthdate,
             "bats": bats,
+            "throws": throws,
             "arm": arm,
             "fa": fa,
             "control": control,
@@ -128,7 +255,7 @@ def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
             "height": height,
             "weight": weight,
             "primary_position": "P",
-            "other_positions": "",
+            "other_positions": assign_secondary_positions("P"),
             "pot_control": bounded_potential(control, age),
             "pot_endurance": bounded_potential(endurance, age),
             "pot_hold_runner": bounded_potential(hold_runner, age),
@@ -142,6 +269,9 @@ def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
         return player
 
     else:
+        primary_pos = assign_primary_position()
+        bats, throws = assign_bats_throws(primary_pos)
+        other_pos = assign_secondary_positions(primary_pos)
         ch = bounded_rating()
         ph = bounded_rating()
         sp = bounded_rating()
@@ -151,8 +281,6 @@ def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
         sc = bounded_rating()
         fa = bounded_rating()
         arm = bounded_rating()
-        primary_pos = assign_primary_position()
-        other_pos = assign_secondary_positions(primary_pos)
 
         player = {
             "first_name": first_name,
@@ -164,6 +292,7 @@ def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
             "is_pitcher": False,
             "birthdate": birthdate,
             "bats": bats,
+            "throws": throws,
             "ch": ch,
             "ph": ph,
             "sp": sp,
@@ -185,8 +314,24 @@ def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
             "pot_sc": sc,
             "pot_gf": gf
         }
-        all_keys = ["ch", "ph", "sp", "gf", "pl", "vl", "sc", "fa", "arm",
-                     "pot_ch", "pot_ph", "pot_sp", "pot_fa", "pot_arm", "pot_sc", "pot_gf"]
+        all_keys = [
+            "ch",
+            "ph",
+            "sp",
+            "gf",
+            "pl",
+            "vl",
+            "sc",
+            "fa",
+            "arm",
+            "pot_ch",
+            "pot_ph",
+            "pot_sp",
+            "pot_fa",
+            "pot_arm",
+            "pot_sc",
+            "pot_gf",
+        ]
         for key in all_keys:
             player.setdefault(key, 0)
 
