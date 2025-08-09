@@ -57,6 +57,8 @@ def load_players_from_csv(file_path):
                 scb = _required_int(row, "scb")
                 kn = _required_int(row, "kn")
                 arm = _optional_int(row, "arm")
+                if arm == 0:
+                    arm = fb
                 fa = _optional_int(row, "fa")
                 player = Pitcher(
                     **common_kwargs,

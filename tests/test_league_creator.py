@@ -1,6 +1,7 @@
 import csv
 import os
-from logic.league_creator import create_league
+from logic.league_creator import create_league, _dict_to_model
+from models.pitcher import Pitcher
 
 
 def test_create_league_generates_files(tmp_path):
@@ -29,3 +30,33 @@ def test_create_league_generates_files(tmp_path):
         with open(r_file) as f:
             lines = [line for line in f.read().strip().splitlines() if line]
         assert len(lines) == 10
+
+
+def test_dict_to_model_defaults_pitcher_arm_to_fastball():
+    data = {
+        "player_id": "p1",
+        "first_name": "Pitch",
+        "last_name": "Er",
+        "birthdate": "1990-01-01",
+        "height": 72,
+        "weight": 180,
+        "bats": "R",
+        "primary_position": "P",
+        "other_positions": "",
+        "gf": 5,
+        "is_pitcher": True,
+        "endurance": 50,
+        "control": 60,
+        "hold_runner": 40,
+        "fb": 70,
+        "cu": 60,
+        "cb": 50,
+        "sl": 55,
+        "si": 45,
+        "scb": 65,
+        "kn": 40,
+    }
+    pitcher = _dict_to_model(data)
+    assert isinstance(pitcher, Pitcher)
+    assert pitcher.arm == 70
+    assert pitcher.potential["arm"] == 70
