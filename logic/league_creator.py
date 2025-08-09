@@ -36,6 +36,8 @@ def _dict_to_model(data: dict):
         return_date=data.get("return_date"),
     )
     if data.get("is_pitcher"):
+        arm = data.get("arm") or data.get("fb", 0)
+        potentials.setdefault("arm", arm)
         return Pitcher(
             **common,
             endurance=data.get("endurance", 0),
@@ -48,7 +50,7 @@ def _dict_to_model(data: dict):
             si=data.get("si", 0),
             scb=data.get("scb", 0),
             kn=data.get("kn", 0),
-            arm=data.get("arm", 0),
+            arm=arm,
             fa=data.get("fa", 0),
             potential=potentials,
         )

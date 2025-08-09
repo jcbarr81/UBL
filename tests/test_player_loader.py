@@ -58,6 +58,7 @@ def test_load_player_with_optional_columns_missing(tmp_path):
     assert player.injury_description is None
     assert player.potential["ch"] == 60
     assert player.potential["gf"] == 50
+    assert player.arm == 90
 
 
 def test_missing_required_numeric_field_raises(tmp_path):
@@ -168,3 +169,64 @@ def test_numeric_is_pitcher_creates_pitcher(tmp_path):
     player = players[0]
     assert isinstance(player, Pitcher)
     assert player.endurance > 0 and player.control > 0
+    assert player.arm == 60
+
+
+def test_pitcher_arm_defaults_to_fastball(tmp_path):
+    file_path = tmp_path / "players.csv"
+    fieldnames = [
+        "player_id",
+        "first_name",
+        "last_name",
+        "birthdate",
+        "height",
+        "weight",
+        "bats",
+        "primary_position",
+        "gf",
+        "is_pitcher",
+        "endurance",
+        "control",
+        "hold_runner",
+        "fb",
+        "cu",
+        "cb",
+        "sl",
+        "si",
+        "scb",
+        "kn",
+        "arm",
+    ]
+    with open(file_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow(
+            {
+                "player_id": "3",
+                "first_name": "Pitch",
+                "last_name": "Tester",
+                "birthdate": "1991-01-01",
+                "height": "72",
+                "weight": "180",
+                "bats": "R",
+                "primary_position": "SP",
+                "gf": "5",
+                "is_pitcher": "1",
+                "endurance": "50",
+                "control": "60",
+                "hold_runner": "40",
+                "fb": "70",
+                "cu": "60",
+                "cb": "50",
+                "sl": "55",
+                "si": "45",
+                "scb": "65",
+                "kn": "40",
+                "arm": "0",
+            }
+        )
+    players = load_players_from_csv(file_path)
+    assert len(players) == 1
+    player = players[0]
+    assert isinstance(player, Pitcher)
+    assert player.arm == 70

@@ -17,6 +17,7 @@ def test_save_players_to_csv_marks_pitchers(tmp_path):
         primary_position="P",
         other_positions=[],
         gf=10,
+        arm=50,
     )
     hitter = Player(
         player_id="h1",
@@ -29,6 +30,7 @@ def test_save_players_to_csv_marks_pitchers(tmp_path):
         primary_position="1B",
         other_positions=[],
         gf=20,
+        arm=60,
     )
     save_players_to_csv([pitcher, hitter], file_path)
     with open(file_path, newline="") as f:
