@@ -20,6 +20,7 @@ def _abbr(city: str, name: str, existing: set) -> str:
 
 def _dict_to_model(data: dict):
     potentials = {k[4:]: v for k, v in data.items() if k.startswith("pot_")}
+    other_pos = data.get("other_positions")
     common = dict(
         player_id=data.get("player_id"),
         first_name=data.get("first_name"),
@@ -29,7 +30,7 @@ def _dict_to_model(data: dict):
         weight=data.get("weight", 0),
         bats=data.get("bats", "R"),
         primary_position=data.get("primary_position", ""),
-        other_positions=data.get("other_positions", "").split("|") if data.get("other_positions") else [],
+        other_positions=other_pos if isinstance(other_pos, list) else (other_pos.split("|") if other_pos else []),
         gf=data.get("gf", 0),
         injured=bool(data.get("injured", 0)),
         injury_description=data.get("injury_description"),

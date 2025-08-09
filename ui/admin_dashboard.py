@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QComboBox,
 )
+from PyQt6.QtCore import Qt
 from utils.trade_utils import load_trades, save_trade
 from utils.news_logger import log_news_event
 from utils.roster_loader import load_roster
@@ -29,19 +30,46 @@ class AdminDashboard(QWidget):
         self.setGeometry(200, 200, 500, 300)
 
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Welcome to the Admin Dashboard"))
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
+
+        header = QLabel("Welcome to the Admin Dashboard")
+        header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header.setStyleSheet("font-size: 18px; font-weight: bold;")
+        layout.addWidget(header)
+
+        layout.addStretch()
+
+        button_layout = QVBoxLayout()
+        button_layout.setSpacing(15)
 
         self.review_button = QPushButton("Review Trades")
         self.review_button.clicked.connect(self.open_trade_review)
-        layout.addWidget(self.review_button)
+        button_layout.addWidget(self.review_button, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.create_league_button = QPushButton("Create League")
         self.create_league_button.clicked.connect(self.open_create_league)
-        layout.addWidget(self.create_league_button)
+        button_layout.addWidget(self.create_league_button, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.add_user_button = QPushButton("Add User")
         self.add_user_button.clicked.connect(self.open_add_user)
-        layout.addWidget(self.add_user_button)
+        button_layout.addWidget(self.add_user_button, alignment=Qt.AlignmentFlag.AlignHCenter)
+
+        layout.addLayout(button_layout)
+        layout.addStretch()
+
+        self.setStyleSheet(
+            """
+            QWidget {background-color: #2c2c2c; color: #f0f0f0; font-size: 14px;}
+            QPushButton {
+                background-color: #444;
+                color: #f0f0f0;
+                padding: 8px;
+                border: 1px solid #555;
+            }
+            QPushButton:hover {background-color: #555;}
+            """
+        )
 
         self.setLayout(layout)
 
@@ -180,6 +208,15 @@ class AdminDashboard(QWidget):
         dialog.exec()
 
     def open_create_league(self):
+        confirm = QMessageBox.question(
+            self,
+            "Overwrite Existing League?",
+            "Creating a new league will overwrite the current league and teams. Continue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+
         div_text, ok = QInputDialog.getText(
             self, "Divisions", "Enter division names separated by commas:"
         )
