@@ -71,6 +71,13 @@ class AdminDashboard(QWidget):
             """
         )
 
+        self.setStyleSheet(
+            """
+            QWidget {background-color: #f0f0f0; font-size: 14px;}
+            QPushButton {padding: 8px;}
+            """
+        )
+
         self.setLayout(layout)
 
     def open_trade_review(self):
