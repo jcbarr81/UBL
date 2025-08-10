@@ -88,6 +88,20 @@ def test_pinch_hitter_used():
     assert stats.at_bats == 1
 
 
+def test_pinch_hitter_not_used():
+    cfg = load_config()
+    bench = make_player("bench", ph=10)
+    starter = make_player("start", ph=80)
+    home = TeamState(lineup=[make_player("h1")], bench=[], pitchers=[make_pitcher("hp")])
+    away = TeamState(lineup=[starter], bench=[bench], pitchers=[make_pitcher("ap")])
+    rng = MockRandom([0.9])  # swing(out)
+    sim = GameSimulation(home, away, cfg, rng)
+    sim.play_at_bat(away, home)
+    assert away.lineup[0].player_id == "start"
+    stats = away.lineup_stats["start"]
+    assert stats.at_bats == 1
+
+
 def test_steal_attempt_success():
     cfg = load_config()
     runner = make_player("run", ph=80, sp=90)
