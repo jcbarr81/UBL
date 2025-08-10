@@ -15,12 +15,12 @@ from PyQt6.QtWidgets import (
 
 from models.base_player import BasePlayer
 from models.roster import Roster
+from utils.pitcher_role import get_role
 
 
 class PositionPlayersDialog(QDialog):
     """Display all position players grouped by roster level and position."""
 
-    pitcher_positions = {"SP", "RP", "P"}
     position_order = ["C", "1B", "2B", "SS", "3B", "LF", "CF", "RF"]
 
     def __init__(self, players: Dict[str, BasePlayer], roster: Roster, parent=None):
@@ -51,7 +51,7 @@ class PositionPlayersDialog(QDialog):
         groups = {}
         for pid in player_ids:
             p = self.players.get(pid)
-            if not p or p.primary_position in self.pitcher_positions:
+            if not p or get_role(p):
                 continue
             groups.setdefault(p.primary_position, []).append(p)
 
@@ -75,13 +75,12 @@ class PositionPlayersDialog(QDialog):
         """Format a player entry similar to OwnerDashboard._make_player_item."""
 
         age = self._calculate_age(p.birthdate)
-        role = getattr(p, "role", "")
-        is_pitcher_role = bool(role)
-        if is_pitcher_role:
+        role = get_role(p)
+        if role:
             core = f"AS:{getattr(p, 'arm', 0)} EN:{getattr(p, 'endurance', 0)} CO:{getattr(p, 'control', 0)}"
         else:
             core = f"CH:{getattr(p, 'ch', 0)} PH:{getattr(p, 'ph', 0)} SP:{getattr(p, 'sp', 0)}"
-        label = f"{p.first_name} {p.last_name} ({age}) - {p.primary_position} | {core}"
+        label = f"{p.first_name} {p.last_name} ({age}) - {role or p.primary_position} | {core}"
         item = QListWidgetItem(label)
         item.setData(Qt.ItemDataRole.UserRole, p.player_id)
         return item

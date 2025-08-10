@@ -3,6 +3,7 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt, QPropertyAnimation
 import os
 import csv
+from utils.pitcher_role import get_role
 
 class LineupEditor(QDialog):
     def __init__(self, team_id):
@@ -263,7 +264,7 @@ class LineupEditor(QDialog):
         act_ids = self.get_act_level_ids()
         bench_players = sorted(
             [pdata["name"] for pid, pdata in self.players_dict.items()
-             if pid in act_ids and pid not in used_ids and pdata.get("primary_position") not in ["SP", "RP", "P"]]
+             if pid in act_ids and pid not in used_ids and not get_role(pdata)]
         )
 
         columns = [[], [], []]
