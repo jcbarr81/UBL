@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QDialog, QLabel, QVBoxLayout, QGridLayout, QComboBox, QPushButton, QMessageBox
 import os
 import csv
+from utils.pitcher_role import get_role
 
 class PitchingEditor(QDialog):
     def __init__(self, team_id):
@@ -22,7 +23,7 @@ class PitchingEditor(QDialog):
             label = QLabel(role)
             dropdown = QComboBox()
             for pid, pdata in self.players_dict.items():
-                if pid in self.act_ids and pdata["primary_position"] in ["SP", "RP", "P"]:
+                if pid in self.act_ids and get_role(pdata):
                     dropdown.addItem(pdata["name"], userData=pid)
             self.pitcher_dropdowns[role] = dropdown
             grid.addWidget(label, i, 0)
@@ -99,7 +100,7 @@ class PitchingEditor(QDialog):
 
     def autofill_staff(self):
         available = [pid for pid, pdata in self.players_dict.items()
-                     if pid in self.act_ids and pdata["primary_position"] in ["SP", "RP", "P"]]
+                     if pid in self.act_ids and get_role(pdata)]
         used = set()
         for role in self.roles:
             dropdown = self.pitcher_dropdowns[role]

@@ -30,6 +30,7 @@ from utils.player_loader import load_players_from_csv
 from utils.news_reader import read_latest_news
 from utils.free_agent_finder import find_free_agents
 from utils.team_loader import load_teams, save_team_settings
+from utils.pitcher_role import get_role
 
 
 class OwnerDashboard(QWidget):
@@ -168,13 +169,12 @@ class OwnerDashboard(QWidget):
 
     def _make_player_item(self, p):
         age = self.calculate_age(p.birthdate)
-        role = getattr(p, "role", "")
-        is_pitcher_role = bool(role)
-        if is_pitcher_role:
+        role = get_role(p)
+        if role:
             core = f"AS:{getattr(p, 'arm', 0)} EN:{getattr(p, 'endurance', 0)} CO:{getattr(p, 'control', 0)}"
         else:
             core = f"CH:{getattr(p, 'ch', 0)} PH:{getattr(p, 'ph', 0)} SP:{getattr(p, 'sp', 0)}"
-        label = f"{p.first_name} {p.last_name} ({age}) - {p.primary_position} | {core}"
+        label = f"{p.first_name} {p.last_name} ({age}) - {role or p.primary_position} | {core}"
         item = QListWidgetItem(label)
         item.setData(Qt.ItemDataRole.UserRole, p.player_id)
         return item
@@ -275,7 +275,7 @@ class OwnerDashboard(QWidget):
             p = self.players.get(pid)
             if not p:
                 continue
-            if p.primary_position not in {"SP", "RP", "P"}:
+            if not get_role(p):
                 act_pos_players += 1
         # Validations per spec
         if act_total > 25:
@@ -329,7 +329,7 @@ class OwnerDashboard(QWidget):
         low_total = len(self.roster.low)
         act_pos_players = sum(
             1 for pid in self.roster.act
-            if pid in self.players and self.players[pid].primary_position not in {"SP", "RP", "P"}
+            if pid in self.players and not get_role(self.players[pid])
         )
         self.roster_count_label.setText(
             f"Active: {act_total} (Pos: {act_pos_players})   |   AAA: {aaa_total}   |   LOW: {low_total}"

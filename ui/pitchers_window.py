@@ -15,12 +15,11 @@ from PyQt6.QtWidgets import (
 
 from models.base_player import BasePlayer
 from models.roster import Roster
+from utils.pitcher_role import get_role
 
 
 class PitchersWindow(QDialog):
     """Display all pitchers grouped by roster level with tabs for roles."""
-
-    pitcher_positions = {"SP", "RP", "P"}
 
     def __init__(self, players: Dict[str, BasePlayer], roster: Roster, parent=None):
         super().__init__(parent)
@@ -50,12 +49,10 @@ class PitchersWindow(QDialog):
         groups = {"SP": [], "RP": []}
         for pid in player_ids:
             p = self.players.get(pid)
-            if not p or p.primary_position not in self.pitcher_positions:
+            role = get_role(p) if p else ""
+            if not role:
                 continue
-            if p.primary_position == "SP":
-                groups["SP"].append(p)
-            else:
-                groups["RP"].append(p)
+            groups[role].append(p)
 
         tab_widget = QTabWidget()
         for role, players in groups.items():
@@ -76,7 +73,8 @@ class PitchersWindow(QDialog):
     def _make_pitcher_item(self, p: BasePlayer) -> QListWidgetItem:
         age = self._calculate_age(p.birthdate)
         core = f"AS:{getattr(p, 'arm', 0)} EN:{getattr(p, 'endurance', 0)} CO:{getattr(p, 'control', 0)}"
-        label = f"{p.first_name} {p.last_name} ({age}) - {p.primary_position} | {core}"
+        role = get_role(p)
+        label = f"{p.first_name} {p.last_name} ({age}) - {role or p.primary_position} | {core}"
         item = QListWidgetItem(label)
         item.setData(Qt.ItemDataRole.UserRole, p.player_id)
         return item
