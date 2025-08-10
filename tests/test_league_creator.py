@@ -8,7 +8,7 @@ import random
 
 def test_create_league_generates_files(tmp_path):
     divisions = {"East": [("CityA", "Cats"), ("CityB", "Dogs")]}
-    create_league(str(tmp_path), divisions, "Test League", roster_size=10)
+    create_league(str(tmp_path), divisions, "Test League")
 
     teams_path = tmp_path / "teams.csv"
     players_path = tmp_path / "players.csv"
@@ -26,14 +26,16 @@ def test_create_league_generates_files(tmp_path):
 
     with open(players_path, newline="") as f:
         players = list(csv.DictReader(f))
-    assert len(players) == 20
+    assert len(players) == 100
 
     for t in teams:
         r_file = rosters_dir / f"{t['team_id']}.csv"
         assert r_file.exists()
         with open(r_file) as f:
             lines = [line for line in f.read().strip().splitlines() if line]
-        assert len(lines) == 10
+        assert len(lines) == 50
+        levels = {line.split(',')[1] for line in lines}
+        assert levels == {"ACT", "AAA", "LOW"}
     with open(league_path) as f:
         assert f.read() == "Test League"
 
@@ -42,7 +44,7 @@ def test_create_league_uses_unique_names(tmp_path):
     reset_name_cache()
     random.seed(0)
     divisions = {"East": [("CityA", "Cats")]}  # single team for simplicity
-    create_league(str(tmp_path), divisions, "Test League", roster_size=10)
+    create_league(str(tmp_path), divisions, "Test League")
 
     players_path = tmp_path / "players.csv"
     with open(players_path, newline="") as f:
@@ -106,7 +108,7 @@ def test_create_league_clears_users_and_rosters(tmp_path, monkeypatch):
     # Ensure clear_users operates on our temporary data directory
     monkeypatch.chdir(tmp_path)
 
-    create_league(str(base_dir), divisions, "Test League", roster_size=2)
+    create_league(str(base_dir), divisions, "Test League")
 
     assert not users_file.exists()
     assert not stray.exists()

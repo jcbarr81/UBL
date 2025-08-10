@@ -1,7 +1,7 @@
 # ARR-inspired Player Generator Script
 import random
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Set
+from typing import Dict, List, Tuple, Set, Optional
 import csv
 import os
 
@@ -233,8 +233,15 @@ def generate_pitches(throws: str, delivery: str, age: int):
     potentials = {f"pot_{p}": bounded_potential(ratings[p], age) if p in selected else 0 for p in PITCH_LIST}
     return ratings, potentials
 
-def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
-    birthdate, age = generate_birthdate((17, 21) if for_draft else (18, 38))
+def generate_player(
+    is_pitcher: bool,
+    for_draft: bool = False,
+    age_range: Optional[Tuple[int, int]] = None,
+    primary_position: Optional[str] = None,
+) -> Dict:
+    birthdate, age = generate_birthdate(
+        age_range if age_range else ((17, 21) if for_draft else (18, 38))
+    )
     first_name, last_name = generate_name()
     player_id = f"P{random.randint(1000, 9999)}"
     height = random.randint(68, 78)
@@ -289,7 +296,7 @@ def generate_player(is_pitcher: bool, for_draft: bool = False) -> Dict:
         return player
 
     else:
-        primary_pos = assign_primary_position()
+        primary_pos = primary_position or assign_primary_position()
         bats, throws = assign_bats_throws(primary_pos)
         other_pos = assign_secondary_positions(primary_pos)
         ch = bounded_rating()
