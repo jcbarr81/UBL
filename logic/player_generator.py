@@ -239,9 +239,34 @@ def generate_player(
     age_range: Optional[Tuple[int, int]] = None,
     primary_position: Optional[str] = None,
 ) -> Dict:
-    birthdate, age = generate_birthdate(
-        age_range if age_range else ((17, 21) if for_draft else (18, 38))
-    )
+    """Generate a single player record.
+
+    Parameters
+    ----------
+    is_pitcher: bool
+        If True a pitcher is created, otherwise a hitter.
+    for_draft: bool
+        When generating players for the draft pool the typical age range is
+        narrower.  This flag preserves that behaviour when ``age_range`` is not
+        supplied.
+    age_range: Optional[Tuple[int, int]]
+        Optional ``(min_age, max_age)`` tuple.  If provided it is forwarded to
+        :func:`generate_birthdate`.
+    primary_position: Optional[str]
+        When generating hitters this can be used to force a specific primary
+        position rather than selecting one at random.
+
+    Returns
+    -------
+    Dict
+        A dictionary describing the generated player.
+    """
+
+    # Determine the effective age range for the player and pass it directly to
+    # ``generate_birthdate``.  This allows callers to override the default
+    # ranges used for draft or regular players.
+    effective_age_range = age_range or ((17, 21) if for_draft else (18, 38))
+    birthdate, age = generate_birthdate(effective_age_range)
     first_name, last_name = generate_name()
     player_id = f"P{random.randint(1000, 9999)}"
     height = random.randint(68, 78)
@@ -296,6 +321,8 @@ def generate_player(
         return player
 
     else:
+        # If the caller specifies a primary position we honour it and bypass
+        # the usual random assignment.
         primary_pos = primary_position or assign_primary_position()
         bats, throws = assign_bats_throws(primary_pos)
         other_pos = assign_secondary_positions(primary_pos)
