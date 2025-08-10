@@ -18,7 +18,7 @@ from utils.news_logger import log_news_event
 from utils.roster_loader import load_roster
 from utils.player_loader import load_players_from_csv
 from utils.team_loader import load_teams
-from utils.user_manager import add_user
+from utils.user_manager import add_user, load_users, update_user
 from models.trade import Trade
 import csv
 import os
@@ -55,6 +55,10 @@ class AdminDashboard(QWidget):
         self.add_user_button = QPushButton("Add User")
         self.add_user_button.clicked.connect(self.open_add_user)
         button_layout.addWidget(self.add_user_button, alignment=Qt.AlignmentFlag.AlignHCenter)
+
+        self.edit_user_button = QPushButton("Edit User")
+        self.edit_user_button.clicked.connect(self.open_edit_user)
+        button_layout.addWidget(self.edit_user_button, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         layout.addLayout(button_layout)
         layout.addStretch()
@@ -197,6 +201,78 @@ class AdminDashboard(QWidget):
             dialog.accept()
 
         add_btn.clicked.connect(handle_add)
+        cancel_btn.clicked.connect(dialog.reject)
+
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    def open_edit_user(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Edit User")
+
+        data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+        users = load_users(os.path.join(data_dir, "users.txt"))
+        if not users:
+            QMessageBox.information(self, "No Users", "No users available.")
+            return
+
+        layout = QVBoxLayout()
+
+        user_combo = QComboBox()
+        for u in users:
+            user_combo.addItem(u["username"], userData=u)
+
+        password_input = QLineEdit()
+        password_input.setEchoMode(QLineEdit.EchoMode.Password)
+
+        team_combo = QComboBox()
+        teams = load_teams(os.path.join(data_dir, "teams.csv"))
+        team_combo.addItem("None", "")
+        for t in teams:
+            team_combo.addItem(f"{t.name} ({t.team_id})", userData=t.team_id)
+
+        layout.addWidget(QLabel("User:"))
+        layout.addWidget(user_combo)
+        layout.addWidget(QLabel("New Password:"))
+        layout.addWidget(password_input)
+        layout.addWidget(QLabel("Team:"))
+        layout.addWidget(team_combo)
+
+        btn_layout = QHBoxLayout()
+        save_btn = QPushButton("Update")
+        cancel_btn = QPushButton("Cancel")
+        btn_layout.addWidget(save_btn)
+        btn_layout.addWidget(cancel_btn)
+        layout.addLayout(btn_layout)
+
+        def sync_fields():
+            user = user_combo.currentData()
+            index = team_combo.findData(user["team_id"])
+            if index >= 0:
+                team_combo.setCurrentIndex(index)
+            password_input.clear()
+
+        user_combo.currentIndexChanged.connect(sync_fields)
+        sync_fields()
+
+        def handle_update():
+            user = user_combo.currentData()
+            new_password = password_input.text().strip() or None
+            new_team = team_combo.currentData()
+            try:
+                update_user(
+                    user["username"],
+                    new_password,
+                    new_team,
+                    os.path.join(data_dir, "users.txt"),
+                )
+            except ValueError as e:
+                QMessageBox.warning(dialog, "Error", str(e))
+                return
+            QMessageBox.information(dialog, "Success", f"User {user['username']} updated.")
+            dialog.accept()
+
+        save_btn.clicked.connect(handle_update)
         cancel_btn.clicked.connect(dialog.reject)
 
         dialog.setLayout(layout)

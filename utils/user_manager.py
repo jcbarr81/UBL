@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 
 def load_users(file_path: str = "data/users.txt") -> List[Dict[str, str]]:
@@ -58,6 +58,66 @@ def add_user(
 
     with open(file_path, "a") as f:
         f.write(f"{username},{password},{role},{team_id}\n")
+
+
+def update_user(
+    username: str,
+    new_password: Optional[str] = None,
+    new_team_id: Optional[str] = None,
+    file_path: str = "data/users.txt",
+) -> None:
+    """Update an existing user's password or team assignment.
+
+    Parameters
+    ----------
+    username: str
+        The username of the account to modify.
+    new_password: str | None
+        New password for the user. If ``None`` the password is unchanged.
+    new_team_id: str | None
+        New team for the user. If ``None`` the team is unchanged. An empty
+        string removes the team assignment.
+    file_path: str
+        Path to the users file.
+
+    Raises
+    ------
+    ValueError
+        If the user does not exist or if assigning an owner to a team that
+        already has an owner.
+    """
+
+    username = username.strip()
+    if new_password is not None:
+        new_password = new_password.strip()
+    if new_team_id is not None:
+        new_team_id = new_team_id.strip()
+
+    users = load_users(file_path)
+    user = next((u for u in users if u["username"] == username), None)
+    if not user:
+        raise ValueError("User not found")
+
+    # Check for team ownership conflicts when moving owners
+    if new_team_id is not None and user["role"] == "owner":
+        if new_team_id and any(
+            u["username"] != username
+            and u["role"] == "owner"
+            and u["team_id"] == new_team_id
+            for u in users
+        ):
+            raise ValueError("Team already has an owner")
+        user["team_id"] = new_team_id
+    elif new_team_id is not None:
+        user["team_id"] = new_team_id
+
+    if new_password is not None:
+        user["password"] = new_password
+
+    # Rewrite file with updated user data
+    with open(file_path, "w") as f:
+        for u in users:
+            f.write(f"{u['username']},{u['password']},{u['role']},{u['team_id']}\n")
 
 
 def clear_users(file_path: str = "data/users.txt") -> None:
