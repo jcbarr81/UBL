@@ -13,7 +13,7 @@ from ui.lineup_editor import LineupEditor
 from ui.pitching_editor import PitchingEditor
 from ui.position_players_dialog import PositionPlayersDialog
 from ui.pitchers_window import PitchersWindow
-from ui.transactions_page import TransactionsPage
+from ui.transactions_window import TransactionsWindow
 from utils.roster_loader import load_roster, save_roster
 from utils.player_loader import load_players_from_csv
 from utils.news_reader import read_latest_news
@@ -191,7 +191,7 @@ class OwnerDashboard(QWidget):
         PitchersWindow(self.players, self.roster).exec()
 
     def open_transactions_page(self):
-        TransactionsPage(self.team_id).exec()
+        TransactionsWindow().exec()
 
     def move_selected_player(self):
         current_tab = self.tabs.currentIndex()
