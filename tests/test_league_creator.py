@@ -86,3 +86,27 @@ def test_dict_to_model_defaults_pitcher_arm_to_fastball():
     assert isinstance(pitcher, Pitcher)
     assert pitcher.arm == 70
     assert pitcher.potential["arm"] == 70
+
+
+def test_create_league_clears_users_and_rosters(tmp_path, monkeypatch):
+    # Set up temporary users file and stray roster file
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    users_file = data_dir / "users.txt"
+    users_file.write_text("olduser,pw,admin,\n")
+
+    base_dir = tmp_path / "league"
+    rosters_dir = base_dir / "rosters"
+    rosters_dir.mkdir(parents=True)
+    stray = rosters_dir / "OLD.csv"
+    stray.write_text("junk")
+
+    divisions = {"East": [("CityA", "Cats")]}  # single team for simplicity
+
+    # Ensure clear_users operates on our temporary data directory
+    monkeypatch.chdir(tmp_path)
+
+    create_league(str(base_dir), divisions, "Test League", roster_size=2)
+
+    assert not users_file.exists()
+    assert not stray.exists()

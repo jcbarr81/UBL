@@ -1,10 +1,12 @@
 import os
 import csv
+import shutil
 from typing import Dict, List, Tuple
 from models.player import Player
 from models.pitcher import Pitcher
 from utils.player_writer import save_players_to_csv
 from logic.player_generator import generate_player
+from utils.user_manager import clear_users
 
 
 def _abbr(city: str, name: str, existing: set) -> str:
@@ -74,7 +76,11 @@ def _dict_to_model(data: dict):
 def create_league(base_dir: str, divisions: Dict[str, List[Tuple[str, str]]], league_name: str, roster_size: int = 25):
     os.makedirs(base_dir, exist_ok=True)
     rosters_dir = os.path.join(base_dir, "rosters")
+    if os.path.exists(rosters_dir):
+        shutil.rmtree(rosters_dir)
     os.makedirs(rosters_dir, exist_ok=True)
+
+    clear_users()
 
     teams_path = os.path.join(base_dir, "teams.csv")
     players_path = os.path.join(base_dir, "players.csv")

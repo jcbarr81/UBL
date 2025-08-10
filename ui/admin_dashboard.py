@@ -240,5 +240,9 @@ class AdminDashboard(QWidget):
 
         structure = dialog.get_structure()
         data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
-        create_league(data_dir, structure, league_name)
+        try:
+            create_league(data_dir, structure, league_name)
+        except OSError as e:
+            QMessageBox.critical(self, "Error", f"Failed to purge existing league: {e}")
+            return
         QMessageBox.information(self, "League Created", "New league generated.")
