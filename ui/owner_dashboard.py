@@ -2,9 +2,19 @@ import os
 import csv
 from datetime import datetime
 from PyQt6.QtWidgets import (
-    QWidget, QLabel, QVBoxLayout, QTabWidget, QListWidget, QTextEdit,
-    QPushButton, QHBoxLayout, QComboBox, QMessageBox, QListWidgetItem,
-    QGroupBox, QMenuBar
+    QWidget,
+    QLabel,
+    QVBoxLayout,
+    QTabWidget,
+    QListWidget,
+    QTextEdit,
+    QPushButton,
+    QHBoxLayout,
+    QComboBox,
+    QMessageBox,
+    QListWidgetItem,
+    QGroupBox,
+    QMenuBar,
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -14,10 +24,12 @@ from ui.pitching_editor import PitchingEditor
 from ui.position_players_dialog import PositionPlayersDialog
 from ui.pitchers_window import PitchersWindow
 from ui.transactions_window import TransactionsWindow
+from ui.team_settings_dialog import TeamSettingsDialog
 from utils.roster_loader import load_roster, save_roster
 from utils.player_loader import load_players_from_csv
 from utils.news_reader import read_latest_news
 from utils.free_agent_finder import find_free_agents
+from utils.team_loader import load_teams, save_team_settings
 
 
 class OwnerDashboard(QWidget):
@@ -37,6 +49,8 @@ class OwnerDashboard(QWidget):
         # Data
         self.players = {p.player_id: p for p in load_players_from_csv("data/players.csv")}
         self.roster = load_roster(team_id)
+        teams = {t.team_id: t for t in load_teams()}
+        self.team = teams.get(team_id)
 
         # Window
         self.setGeometry(200, 200, 900, 650)
@@ -56,10 +70,12 @@ class OwnerDashboard(QWidget):
         pit_action = team_menu.addAction("Pitchers")
         lineups_action = team_menu.addAction("Lineups")
         trans_action = team_menu.addAction("Transactions")
+        settings_action = team_menu.addAction("Settings")
         pos_action.triggered.connect(self.open_position_players_dialog)
         pit_action.triggered.connect(self.open_pitchers_window)
         lineups_action.triggered.connect(self.open_lineup_editor)
         trans_action.triggered.connect(self.open_transactions_page)
+        settings_action.triggered.connect(self.open_team_settings)
         league_menu = menubar.addMenu("League")
         league_menu.addAction("Standings")
         league_menu.addAction("Schedule")
@@ -192,6 +208,19 @@ class OwnerDashboard(QWidget):
 
     def open_transactions_page(self):
         TransactionsWindow().exec()
+
+    def open_team_settings(self):
+        if not self.team:
+            QMessageBox.warning(self, "Error", "Team information not available.")
+            return
+        dialog = TeamSettingsDialog(self.team, self)
+        if dialog.exec():
+            settings = dialog.get_settings()
+            self.team.primary_color = settings["primary_color"]
+            self.team.secondary_color = settings["secondary_color"]
+            self.team.stadium = settings["stadium"]
+            save_team_settings(self.team)
+            QMessageBox.information(self, "Saved", "Team settings updated.")
 
     def move_selected_player(self):
         current_tab = self.tabs.currentIndex()
