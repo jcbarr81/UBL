@@ -274,13 +274,13 @@ def generate_player(
 
     if is_pitcher:
         bats, throws = assign_bats_throws("P")
-        role = random.choice(["SP", "RP"])
+        endurance = bounded_rating()
+        role = "SP" if endurance > 55 else "RP"
         delivery = random.choices(["overhand", "sidearm"], weights=[95, 5])[0]
         arm = bounded_rating()
         fa = bounded_rating()
         control = bounded_rating()
         movement = bounded_rating()
-        endurance = bounded_rating()
         hold_runner = bounded_rating()
         pitch_ratings, pitch_pots = generate_pitches(throws, delivery, age)
 
