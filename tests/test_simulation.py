@@ -3,7 +3,7 @@ from pathlib import Path
 import random
 
 from logic.pbini_loader import load_pbini
-from logic.simulation import GameSimulation, TeamState
+from logic.simulation import BatterState, GameSimulation, TeamState
 from models.player import Player
 from models.pitcher import Pitcher
 
@@ -101,6 +101,23 @@ def test_steal_attempt_success():
     stats = away.lineup_stats["run"]
     assert stats.steals == 1
     assert away.bases[1] is stats
+
+
+def test_steal_attempt_failure():
+    cfg = load_config()
+    runner = make_player("run")
+    batter = make_player("bat", ph=80, sp=90)
+    home = TeamState(lineup=[make_player("h1")], bench=[], pitchers=[make_pitcher("hp")])
+    away = TeamState(lineup=[batter], bench=[], pitchers=[make_pitcher("ap")])
+    runner_state = BatterState(runner)
+    away.lineup_stats[runner.player_id] = runner_state
+    away.bases[0] = runner_state
+    # swing hit -> 0, steal attempt -> 0, steal failure -> 0.9
+    rng = MockRandom([0.0, 0.0, 0.9])
+    sim = GameSimulation(home, away, cfg, rng)
+    outs = sim.play_at_bat(away, home)
+    assert outs == 1
+    assert away.bases[0] is None
 
 
 def test_pitcher_change_when_tired():
