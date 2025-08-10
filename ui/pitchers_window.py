@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QListWidget,
     QListWidgetItem,
+    QTabWidget,
     QVBoxLayout,
 )
 
@@ -17,7 +18,7 @@ from models.roster import Roster
 
 
 class PitchersWindow(QDialog):
-    """Display all pitchers grouped by roster level and role."""
+    """Display all pitchers grouped by roster level with tabs for roles."""
 
     pitcher_positions = {"SP", "RP", "P"}
 
@@ -29,9 +30,9 @@ class PitchersWindow(QDialog):
         self.setWindowTitle("Pitchers")
 
         layout = QVBoxLayout()
-        layout.addWidget(self._build_level_group("Active (ACT)", roster.act))
-        layout.addWidget(self._build_level_group("AAA", roster.aaa))
-        layout.addWidget(self._build_level_group("LOW", roster.low))
+        layout.addWidget(self._build_level_section("Active (ACT)", roster.act))
+        layout.addWidget(self._build_level_section("AAA", roster.aaa))
+        layout.addWidget(self._build_level_section("LOW", roster.low))
         layout.addStretch()
         self.setLayout(layout)
 
@@ -40,37 +41,33 @@ class PitchersWindow(QDialog):
 
     # ------------------------------------------------------------------
     # Builders
-    def _build_level_group(self, title: str, player_ids: Iterable[str]) -> QGroupBox:
-        """Create a group showing pitchers for a single level."""
+    def _build_level_section(self, title: str, player_ids: Iterable[str]) -> QGroupBox:
+        """Create a section showing pitchers for a single level using tabs."""
 
         group = QGroupBox(title)
         layout = QVBoxLayout()
 
-        sp_box = QGroupBox("Starting Pitchers (SP)")
-        sp_layout = QVBoxLayout()
-        sp_list = QListWidget()
-
-        rp_box = QGroupBox("Relief Pitchers (RP)")
-        rp_layout = QVBoxLayout()
-        rp_list = QListWidget()
-
+        groups = {"SP": [], "RP": []}
         for pid in player_ids:
             p = self.players.get(pid)
             if not p or p.primary_position not in self.pitcher_positions:
                 continue
-            item = self._make_pitcher_item(p)
             if p.primary_position == "SP":
-                sp_list.addItem(item)
+                groups["SP"].append(p)
             else:
-                rp_list.addItem(item)
+                groups["RP"].append(p)
 
-        sp_layout.addWidget(sp_list)
-        sp_box.setLayout(sp_layout)
-        rp_layout.addWidget(rp_list)
-        rp_box.setLayout(rp_layout)
+        tab_widget = QTabWidget()
+        for role, players in groups.items():
+            if not players:
+                continue
+            lw = QListWidget()
+            for player in players:
+                lw.addItem(self._make_pitcher_item(player))
+            label = "Starting Pitchers (SP)" if role == "SP" else "Relief Pitchers (RP)"
+            tab_widget.addTab(lw, label)
 
-        layout.addWidget(sp_box)
-        layout.addWidget(rp_box)
+        layout.addWidget(tab_widget)
         group.setLayout(layout)
         return group
 
