@@ -58,3 +58,9 @@ def add_user(
 
     with open(file_path, "a") as f:
         f.write(f"{username},{password},{role},{team_id}\n")
+
+
+def clear_users(file_path: str = "data/users.txt") -> None:
+    """Remove all user accounts by deleting the users file if it exists."""
+    if os.path.exists(file_path):
+        os.remove(file_path)
