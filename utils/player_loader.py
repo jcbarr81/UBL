@@ -50,6 +50,7 @@ def load_players_from_csv(file_path):
                 control = _required_int(row, "control")
                 movement = _required_int(row, "movement")
                 hold_runner = _required_int(row, "hold_runner")
+                role = row.get("role", "")
                 fb = _required_int(row, "fb")
                 cu = _required_int(row, "cu")
                 cb = _required_int(row, "cb")
@@ -74,6 +75,7 @@ def load_players_from_csv(file_path):
                     si=si,
                     scb=scb,
                     kn=kn,
+                    role=role,
                     arm=arm,
                     fa=fa,
                     potential={

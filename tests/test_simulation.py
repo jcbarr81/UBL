@@ -42,7 +42,9 @@ def make_player(pid: str, ph: int = 50, sp: int = 50, ch: int = 50) -> Player:
     )
 
 
-def make_pitcher(pid: str, endurance: int = 100, hold_runner: int = 50) -> Pitcher:
+def make_pitcher(
+    pid: str, endurance: int = 100, hold_runner: int = 50, role: str = "SP"
+) -> Pitcher:
     return Pitcher(
         player_id=pid,
         first_name="PF" + pid,
@@ -67,6 +69,7 @@ def make_pitcher(pid: str, endurance: int = 100, hold_runner: int = 50) -> Pitch
         kn=0,
         arm=50,
         fa=50,
+        role=role,
     )
 
 
