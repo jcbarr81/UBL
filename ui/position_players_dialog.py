@@ -75,7 +75,8 @@ class PositionPlayersDialog(QDialog):
         """Format a player entry similar to OwnerDashboard._make_player_item."""
 
         age = self._calculate_age(p.birthdate)
-        is_pitcher_role = (p.primary_position in self.pitcher_positions) or hasattr(p, "endurance")
+        role = getattr(p, "role", "")
+        is_pitcher_role = bool(role)
         if is_pitcher_role:
             core = f"AS:{getattr(p, 'arm', 0)} EN:{getattr(p, 'endurance', 0)} CO:{getattr(p, 'control', 0)}"
         else:

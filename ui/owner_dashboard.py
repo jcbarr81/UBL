@@ -168,7 +168,8 @@ class OwnerDashboard(QWidget):
 
     def _make_player_item(self, p):
         age = self.calculate_age(p.birthdate)
-        is_pitcher_role = (p.primary_position in {"SP", "RP", "P"}) or hasattr(p, "endurance")
+        role = getattr(p, "role", "")
+        is_pitcher_role = bool(role)
         if is_pitcher_role:
             core = f"AS:{getattr(p, 'arm', 0)} EN:{getattr(p, 'endurance', 0)} CO:{getattr(p, 'control', 0)}"
         else:
