@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QListWidget,
     QListWidgetItem,
+    QTabWidget,
     QVBoxLayout,
 )
 
@@ -20,6 +21,7 @@ class PositionPlayersDialog(QDialog):
     """Display all position players grouped by roster level and position."""
 
     pitcher_positions = {"SP", "RP", "P"}
+    position_order = ["C", "1B", "2B", "SS", "3B", "LF", "CF", "RF"]
 
     def __init__(self, players: Dict[str, BasePlayer], roster: Roster, parent=None):
         super().__init__(parent)
@@ -50,17 +52,17 @@ class PositionPlayersDialog(QDialog):
                 continue
             groups.setdefault(p.primary_position, []).append(p)
 
-        for position, players in sorted(groups.items()):
-            group_box = QGroupBox(position)
-            gb_layout = QVBoxLayout()
+        tab_widget = QTabWidget()
+        for position in self.position_order:
+            players = groups.get(position)
+            if not players:
+                continue
             lw = QListWidget()
             for player in players:
                 lw.addItem(self._make_player_item(player))
-            gb_layout.addWidget(lw)
-            group_box.setLayout(gb_layout)
-            layout.addWidget(group_box)
+            tab_widget.addTab(lw, position)
 
-        layout.addStretch()
+        layout.addWidget(tab_widget)
         level_box.setLayout(layout)
         return level_box
 
