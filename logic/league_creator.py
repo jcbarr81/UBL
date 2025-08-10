@@ -73,7 +73,7 @@ def _dict_to_model(data: dict):
         )
 
 
-def create_league(base_dir: str, divisions: Dict[str, List[Tuple[str, str]]], league_name: str, roster_size: int = 25):
+def create_league(base_dir: str, divisions: Dict[str, List[Tuple[str, str]]], league_name: str):
     os.makedirs(base_dir, exist_ok=True)
     rosters_dir = os.path.join(base_dir, "rosters")
     if os.path.exists(rosters_dir):
@@ -90,8 +90,26 @@ def create_league(base_dir: str, divisions: Dict[str, List[Tuple[str, str]]], le
     all_players = []
     existing_abbr = set()
 
-    num_pitchers = roster_size // 2
-    num_hitters = roster_size - num_pitchers
+    def generate_roster(num_pitchers: int, num_hitters: int, age_range: Tuple[int, int], ensure_positions: bool = False):
+        players = []
+        for _ in range(num_pitchers):
+            data = generate_player(is_pitcher=True, age_range=age_range)
+            data["is_pitcher"] = True
+            players.append(data)
+        if ensure_positions:
+            positions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"]
+            for pos in positions:
+                data = generate_player(is_pitcher=False, age_range=age_range, primary_position=pos)
+                data["is_pitcher"] = False
+                players.append(data)
+            remaining = num_hitters - len(positions)
+        else:
+            remaining = num_hitters
+        for _ in range(remaining):
+            data = generate_player(is_pitcher=False, age_range=age_range)
+            data["is_pitcher"] = False
+            players.append(data)
+        return players
 
     for division, teams in divisions.items():
         for city, name in teams:
@@ -108,23 +126,21 @@ def create_league(base_dir: str, divisions: Dict[str, List[Tuple[str, str]]], le
                 "owner_id": "",
             })
 
-            roster_players = []
-            for _ in range(num_pitchers):
-                data = generate_player(is_pitcher=True)
-                data["is_pitcher"] = True
-                roster_players.append(data)
-            for _ in range(num_hitters):
-                data = generate_player(is_pitcher=False)
-                data["is_pitcher"] = False
-                roster_players.append(data)
+            act_players = generate_roster(11, 14, (21, 38), ensure_positions=True)
+            aaa_players = generate_roster(7, 8, (21, 38))
+            low_players = generate_roster(5, 5, (18, 21))
 
-            all_players.extend(roster_players)
+            roster_levels = {"ACT": act_players, "AAA": aaa_players, "LOW": low_players}
+
+            for level_players in roster_levels.values():
+                all_players.extend(level_players)
 
             roster_file = os.path.join(rosters_dir, f"{abbr}.csv")
             with open(roster_file, "w", newline="") as f:
                 writer = csv.writer(f)
-                for p in roster_players:
-                    writer.writerow([p["player_id"], "ACT"])
+                for level, players in roster_levels.items():
+                    for p in players:
+                        writer.writerow([p["player_id"], level])
 
     player_models = [_dict_to_model(p) for p in all_players]
     save_players_to_csv(player_models, players_path)
