@@ -188,7 +188,7 @@ class OwnerDashboard(QWidget):
         PositionPlayersDialog(self.players, self.roster).exec()
 
     def open_pitchers_window(self):
-        PitchersWindow(self.team_id).exec()
+        PitchersWindow(self.players, self.roster).exec()
 
     def open_transactions_page(self):
         TransactionsPage(self.team_id).exec()
