@@ -8,6 +8,7 @@ class Pitcher(BasePlayer):
     control: int = 0
     movement: int = 0
     hold_runner: int = 0
+    role: str = ""
 
     fb: int = 0
     cu: int = 0

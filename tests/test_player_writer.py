@@ -1,6 +1,7 @@
 import csv
 from models.player import Player
 from models.pitcher import Pitcher
+from utils.player_loader import load_players_from_csv
 from utils.player_writer import save_players_to_csv
 
 
@@ -18,6 +19,7 @@ def test_save_players_to_csv_marks_pitchers(tmp_path):
         other_positions=[],
         gf=10,
         arm=50,
+        role="SP",
     )
     hitter = Player(
         player_id="h1",
@@ -36,6 +38,11 @@ def test_save_players_to_csv_marks_pitchers(tmp_path):
     with open(file_path, newline="") as f:
         reader = csv.DictReader(f)
         rows = list(reader)
-    rows_by_id = {row["player_id"]: row["is_pitcher"] for row in rows}
-    assert rows_by_id["p1"] == "1"
-    assert rows_by_id["h1"] == "0"
+    rows_by_id = {
+        row["player_id"]: (row["is_pitcher"], row.get("role", "")) for row in rows
+    }
+    assert rows_by_id["p1"] == ("1", "SP")
+    assert rows_by_id["h1"] == ("0", "")
+    loaded_players = load_players_from_csv(file_path)
+    roles = {p.player_id: getattr(p, "role", "") for p in loaded_players if isinstance(p, Pitcher)}
+    assert roles["p1"] == "SP"

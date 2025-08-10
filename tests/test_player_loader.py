@@ -17,6 +17,7 @@ def test_load_player_with_optional_columns_missing(tmp_path):
         "primary_position",
         "gf",
         "is_pitcher",
+        "role",
         "ch",
         "ph",
         "sp",
@@ -41,6 +42,7 @@ def test_load_player_with_optional_columns_missing(tmp_path):
                 "primary_position": "1B",
                 "gf": "50",
                 "is_pitcher": "false",
+                "role": "",
                 "ch": "60",
                 "ph": "55",
                 "sp": "70",
@@ -74,6 +76,7 @@ def test_missing_required_numeric_field_raises(tmp_path):
         "primary_position",
         "gf",
         "is_pitcher",
+        "role",
         "ch",
         "ph",
         "sp",
@@ -98,6 +101,7 @@ def test_missing_required_numeric_field_raises(tmp_path):
                 "primary_position": "1B",
                 "gf": "50",
                 "is_pitcher": "false",
+                "role": "",
                 "ch": "60",
                 "ph": "55",
                 "sp": "70",
@@ -125,6 +129,7 @@ def test_numeric_is_pitcher_creates_pitcher(tmp_path):
         "primary_position",
         "gf",
         "is_pitcher",
+        "role",
         "endurance",
         "control",
         "movement",
@@ -152,6 +157,7 @@ def test_numeric_is_pitcher_creates_pitcher(tmp_path):
                 "primary_position": "P",
                 "gf": "10",
                 "is_pitcher": "1",
+                "role": "SP",
                 "endurance": "40",
                 "control": "50",
                 "movement": "35",
@@ -170,6 +176,7 @@ def test_numeric_is_pitcher_creates_pitcher(tmp_path):
     assert len(players) == 1
     player = players[0]
     assert isinstance(player, Pitcher)
+    assert player.role == "SP"
     assert player.endurance > 0 and player.control > 0
     assert player.arm == 60
 
@@ -187,6 +194,7 @@ def test_pitcher_arm_defaults_to_fastball(tmp_path):
         "primary_position",
         "gf",
         "is_pitcher",
+        "role",
         "endurance",
         "control",
         "movement",
@@ -215,6 +223,7 @@ def test_pitcher_arm_defaults_to_fastball(tmp_path):
                 "primary_position": "SP",
                 "gf": "5",
                 "is_pitcher": "1",
+                "role": "SP",
                 "endurance": "50",
                 "control": "60",
                 "movement": "55",
@@ -233,4 +242,5 @@ def test_pitcher_arm_defaults_to_fastball(tmp_path):
     assert len(players) == 1
     player = players[0]
     assert isinstance(player, Pitcher)
+    assert player.role == "SP"
     assert player.arm == 70
