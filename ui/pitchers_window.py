@@ -35,6 +35,9 @@ class PitchersWindow(QDialog):
         layout.addStretch()
         self.setLayout(layout)
 
+        size = self.sizeHint()
+        self.resize(size.width() * 2, size.height())
+
     # ------------------------------------------------------------------
     # Builders
     def _build_level_group(self, title: str, player_ids: Iterable[str]) -> QGroupBox:
