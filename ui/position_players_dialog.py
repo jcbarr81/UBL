@@ -37,6 +37,9 @@ class PositionPlayersDialog(QDialog):
         layout.addStretch()
         self.setLayout(layout)
 
+        size = self.sizeHint()
+        self.resize(size.width() * 2, size.height())
+
     # ------------------------------------------------------------------
     # Section builders
     def _build_level_section(self, label: str, player_ids: Iterable[str]) -> QGroupBox:
