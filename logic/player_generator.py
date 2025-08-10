@@ -1,22 +1,35 @@
 # ARR-inspired Player Generator Script
 import random
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple
-# pandas is optional; fall back to simple names if unavailable
-try:
-    import pandas as pd  # type: ignore
-except Exception:  # pragma: no cover - handled by fallback
-    pd = None
+from typing import Dict, List, Tuple, Set
+import csv
 import os
 
 # Constants
 base_dir = os.path.dirname(os.path.abspath(__file__))
 NAME_PATH = os.path.join(base_dir, "..", "data", "names.csv")
-if pd is not None and os.path.exists(NAME_PATH):
-    name_df = pd.read_csv(NAME_PATH)
-    grouped_names = name_df.groupby("ethnicity")
-else:  # pragma: no cover - fallback when pandas or file missing
-    grouped_names = None
+
+
+def _load_name_pool() -> Dict[str, List[Tuple[str, str]]]:
+    pool: Dict[str, List[Tuple[str, str]]] = {}
+    if os.path.exists(NAME_PATH):
+        with open(NAME_PATH, newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                pool.setdefault(row["ethnicity"], []).append(
+                    (row["first_name"], row["last_name"])
+                )
+    return pool
+
+
+name_pool = _load_name_pool()
+used_names: Set[Tuple[str, str]] = set()
+
+
+def reset_name_cache():
+    global name_pool, used_names
+    name_pool = _load_name_pool()
+    used_names = set()
 
     
 # Helper Functions
@@ -43,13 +56,17 @@ def bounded_potential(actual, age):
     return max(10, min(99, pot))
 
 def generate_name() -> tuple[str, str]:
-    if grouped_names is not None:
-        ethnicity = random.choice(list(grouped_names.groups.keys()))
-        subset = grouped_names.get_group(ethnicity)
-        row = subset.sample(1).iloc[0]
-        return row["first_name"], row["last_name"]
-    else:
-        return "John", "Doe"
+    if name_pool:
+        total_names = sum(len(v) for v in name_pool.values())
+        if len(used_names) >= total_names:
+            return "John", "Doe"
+        while True:
+            ethnicity = random.choice(list(name_pool.keys()))
+            name = random.choice(name_pool[ethnicity])
+            if name not in used_names:
+                used_names.add(name)
+                return name
+    return "John", "Doe"
 
 PRIMARY_POSITION_WEIGHTS = {
     "C": 19,

@@ -2,6 +2,8 @@ import csv
 import os
 from logic.league_creator import create_league, _dict_to_model
 from models.pitcher import Pitcher
+from logic.player_generator import reset_name_cache
+import random
 
 
 def test_create_league_generates_files(tmp_path):
@@ -34,6 +36,25 @@ def test_create_league_generates_files(tmp_path):
         assert len(lines) == 10
     with open(league_path) as f:
         assert f.read() == "Test League"
+
+
+def test_create_league_uses_unique_names(tmp_path):
+    reset_name_cache()
+    random.seed(0)
+    divisions = {"East": [("CityA", "Cats")]}  # single team for simplicity
+    create_league(str(tmp_path), divisions, "Test League", roster_size=10)
+
+    players_path = tmp_path / "players.csv"
+    with open(players_path, newline="") as f:
+        players = list(csv.DictReader(f))
+
+    names = {(p["first_name"], p["last_name"]) for p in players}
+    assert ("John", "Doe") not in names
+    assert len(names) == len(players)
+
+    with open("data/names.csv", newline="") as f:
+        allowed = {(r["first_name"], r["last_name"]) for r in csv.DictReader(f)}
+    assert names <= allowed
 
 
 def test_dict_to_model_defaults_pitcher_arm_to_fastball():
