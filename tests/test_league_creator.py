@@ -1,5 +1,6 @@
 import csv
-import os
+from collections import Counter
+from datetime import date
 from logic.league_creator import create_league, _dict_to_model
 from models.pitcher import Pitcher
 from logic.player_generator import reset_name_cache
@@ -26,16 +27,34 @@ def test_create_league_generates_files(tmp_path):
 
     with open(players_path, newline="") as f:
         players = list(csv.DictReader(f))
+    players_by_id = {p["player_id"]: p for p in players}
     assert len(players) == 100
 
     for t in teams:
         r_file = rosters_dir / f"{t['team_id']}.csv"
         assert r_file.exists()
         with open(r_file) as f:
-            lines = [line for line in f.read().strip().splitlines() if line]
-        assert len(lines) == 50
-        levels = {line.split(',')[1] for line in lines}
-        assert levels == {"ACT", "AAA", "LOW"}
+            rows = [line.split(",") for line in f.read().strip().splitlines() if line]
+        assert len(rows) == 50
+        counts = Counter(level for _, level in rows)
+        assert counts["ACT"] == 25
+        assert counts["AAA"] == 15
+        assert counts["LOW"] == 10
+        assert set(counts.keys()) == {"ACT", "AAA", "LOW"}
+
+        act_players = [players_by_id[pid] for pid, level in rows if level == "ACT"]
+        act_pitchers = sum(1 for p in act_players if p["is_pitcher"] == "1")
+        assert act_pitchers >= 11
+        act_positions = {p["primary_position"] for p in act_players if p["is_pitcher"] == "0"}
+        assert {"C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"} <= act_positions
+
+        for pid, level in rows:
+            birthdate = date.fromisoformat(players_by_id[pid]["birthdate"])
+            age = (date.today() - birthdate).days // 365
+            if level in {"ACT", "AAA"}:
+                assert 21 <= age <= 38
+            else:
+                assert 18 <= age <= 21
     with open(league_path) as f:
         assert f.read() == "Test League"
 
