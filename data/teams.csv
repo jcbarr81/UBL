@@ -1,4 +1,16 @@
 team_id,name,city,abbreviation,division,stadium,primary_color,secondary_color,owner_id
-ARG,Archers,Buenos Aires,ARG,East,Estadio Nacional,Blue,White,USR001
-NYH,Highlanders,New York,NYH,East,Yankee Stadium,Navy,Gray,USR002
-LAX,Explorers,Los Angeles,LAX,West,Dodger Stadium,Dodger Blue,Silver,USR003
+PWO,Wolves,Philadelphia,PWO,East,Wolves Stadium,Blue,White,
+DFA,Falcons,Detroit,DFA,East,Falcons Stadium,Blue,White,
+PSH,Sharks,Phoenix,PSH,East,Sharks Stadium,Blue,White,
+LMA,Mariners,Louisville,LMA,East,Mariners Stadium,Blue,White,
+LBE,Bears,Las Vegas,LBE,East,Bears Stadium,Blue,White,
+DDR,Dragons,Dallas,DDR,Central,Dragons Stadium,Blue,White,
+BRA,Raiders,Boston,BRA,Central,Raiders Stadium,Blue,White,
+MRA,Rangers,Memphis,MRA,Central,Rangers Stadium,Blue,White,
+FHO,Hornets,Fort Worth,FHO,Central,Hornets Stadium,Blue,White,
+IGI,Giants,Indianapolis,IGI,Central,Giants Stadium,Blue,White,
+MTH,Thunder,Milwaukee,MTH,West,Thunder Stadium,Blue,White,
+WRO,Rockets,Washington,WRO,West,Rockets Stadium,Blue,White,
+NTI,Tigers,New York,NTI,West,Tigers Stadium,Blue,White,
+HJE,Jets,Houston,HJE,West,Jets Stadium,Blue,White,
+CSP,Spartans,Chicago,CSP,West,Spartans Stadium,Blue,White,
