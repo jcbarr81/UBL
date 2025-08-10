@@ -4,7 +4,7 @@ from datetime import datetime
 from PyQt6.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QTabWidget, QListWidget, QTextEdit,
     QPushButton, QHBoxLayout, QComboBox, QMessageBox, QListWidgetItem,
-    QGroupBox
+    QGroupBox, QMenuBar
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -45,6 +45,16 @@ class OwnerDashboard(QWidget):
 
         main = QVBoxLayout()
         main.setContentsMargins(10, 10, 10, 10)
+
+        # Menu bar
+        menubar = QMenuBar()
+        team_menu = menubar.addMenu("Team")
+        team_menu.addAction("Overview")
+        team_menu.addAction("Finances")
+        league_menu = menubar.addMenu("League")
+        league_menu.addAction("Standings")
+        league_menu.addAction("Schedule")
+        main.setMenuBar(menubar)
 
         welcome = QLabel(f"Welcome, Owner of {team_id}!")
         welcome.setFont(bold)
