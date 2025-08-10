@@ -146,3 +146,19 @@ def test_pitcher_change_when_tired():
     sim = GameSimulation(home, away, cfg, rng)
     sim.play_at_bat(away, home)
     assert home.current_pitcher_state.player.player_id == "relief"
+
+
+def test_pitcher_not_changed():
+    cfg = load_config()
+    home = TeamState(
+        lineup=[make_player("h1")],
+        bench=[],
+        pitchers=[make_pitcher("start", endurance=30), make_pitcher("relief")],
+    )
+    away = TeamState(lineup=[make_player("a1")], bench=[], pitchers=[make_pitcher("ap")])
+    rng = MockRandom([0.9])  # swing(out)
+    sim = GameSimulation(home, away, cfg, rng)
+    original_state = home.current_pitcher_state
+    sim.play_at_bat(away, home)
+    assert home.current_pitcher_state is original_state
+    assert home.current_pitcher_state.player.player_id == "start"
