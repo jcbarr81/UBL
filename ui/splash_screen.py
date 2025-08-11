@@ -1,6 +1,6 @@
-import os
+from pathlib import Path
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout
-from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtCore import Qt
 
 from ui.login_window import LoginWindow
 
@@ -14,14 +14,10 @@ class SplashScreen(QWidget):
         layout = QVBoxLayout()
         layout.addStretch()
 
-        logo_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "logo",
-            "UBL.png",
-        )
-        logo_path = QUrl.fromLocalFile(logo_path).toString()
+        logo_path = Path(__file__).resolve().parents[1] / "logo" / "UBL.png"
+        logo_url = logo_path.as_posix()
         self.setStyleSheet(
-            f"background-image: url('{logo_path}');"
+            f"background-image: url('{logo_url}');"
             "background-repeat: no-repeat; background-position: center;"
         )
 
