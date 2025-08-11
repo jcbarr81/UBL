@@ -74,9 +74,7 @@ class LoginWindow(QWidget):
             QMessageBox.warning(self, "Error", "Unrecognized role.")
             return
 
-        self.dashboard.resize(1000, 800)
-
-        self.dashboard.show()
+        self.dashboard.showFullScreen()
         self.close()
 
 if __name__ == "__main__":
