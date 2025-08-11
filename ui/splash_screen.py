@@ -31,6 +31,10 @@ class SplashScreen(QWidget):
         self.login_button.clicked.connect(self.open_login)
         layout.addWidget(self.login_button, alignment=Qt.AlignmentFlag.AlignCenter)
 
+        # Add a stretch below the login button to push it upward for a
+        # more balanced appearance on the splash screen.
+        layout.addStretch()
+
         self.setLayout(layout)
         self.login_window = None
 
