@@ -79,7 +79,7 @@ class LineupEditor(QDialog):
         self.players_dict = self.load_players_dict()
         self.act_players = [
             (pid, pdata["name"]) for pid, pdata in self.players_dict.items()
-            if "(P)" not in pdata["name"] and pid in self.get_act_level_ids()
+            if not pdata.get("is_pitcher") and pid in self.get_act_level_ids()
         ]
 
         for i in range(9):
@@ -161,11 +161,16 @@ class LineupEditor(QDialog):
                 QMessageBox.warning(self, "Validation Error", f"Player ID {player_id} not found.")
                 return
 
-            primary = pdata.get("primary_position")
-            others = pdata.get("other_positions", [])
-            if position != primary and position not in others:
-                QMessageBox.warning(self, "Validation Error", f"{pdata['name']} is not eligible to play {position}.")
-                return
+            if position == "DH":
+                if pdata.get("is_pitcher"):
+                    QMessageBox.warning(self, "Validation Error", f"{pdata['name']} cannot be the DH.")
+                    return
+            else:
+                primary = pdata.get("primary_position")
+                others = pdata.get("other_positions", [])
+                if position != primary and position not in others:
+                    QMessageBox.warning(self, "Validation Error", f"{pdata['name']} is not eligible to play {position}.")
+                    return
 
         filename = self.get_lineup_filename()
         os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -194,10 +199,12 @@ class LineupEditor(QDialog):
                     name = f"{row.get('first_name', '').strip()} {row.get('last_name', '').strip()}"
                     primary = row.get("primary_position", "").strip()
                     others = row.get("other_positions", "").strip().split("/") if row.get("other_positions") else []
+                    is_pitcher = row.get("is_pitcher") == "1"
                     players[player_id] = {
                         "name": f"{name} ({primary})",
                         "primary_position": primary,
                         "other_positions": others,
+                        "is_pitcher": is_pitcher,
                         "ratings": {
                             "CH": row.get("CH", ""),
                             "PH": row.get("PH", ""),
@@ -326,5 +333,8 @@ class LineupEditor(QDialog):
                 continue
             primary = pdata.get("primary_position")
             others = pdata.get("other_positions", [])
-            if selected_pos == primary or selected_pos in others:
+            if selected_pos == "DH":
+                if not pdata.get("is_pitcher"):
+                    dropdown.addItem(pdata["name"], userData=pid)
+            elif selected_pos == primary or selected_pos in others:
                 dropdown.addItem(pdata["name"], userData=pid)
