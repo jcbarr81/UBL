@@ -1,6 +1,6 @@
 import os
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QUrl
 
 from ui.login_window import LoginWindow
 
@@ -19,8 +19,10 @@ class SplashScreen(QWidget):
             "logo",
             "UBL.png",
         )
+        logo_path = QUrl.fromLocalFile(logo_path).toString()
         self.setStyleSheet(
-            f"background-image: url({logo_path}); background-repeat: no-repeat; background-position: center;"
+            f"background-image: url('{logo_path}');"
+            "background-repeat: no-repeat; background-position: center;"
         )
 
         self.start_button = QPushButton("Start Game")
