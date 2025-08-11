@@ -121,8 +121,8 @@ def create_league(base_dir: str, divisions: Dict[str, List[Tuple[str, str]]], le
                 "abbreviation": abbr,
                 "division": division,
                 "stadium": f"{name} Stadium",
-                "primary_color": "Blue",
-                "secondary_color": "White",
+                "primary_color": "#0000FF",
+                "secondary_color": "#FFFFFF",
                 "owner_id": "",
             })
 
