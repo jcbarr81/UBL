@@ -16,6 +16,14 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QMenuBar,
 )
+
+try:
+    from PyQt6.QtWidgets import QApplication
+except ImportError:  # pragma: no cover - fallback for environments without PyQt6
+    class QApplication:  # type: ignore
+        @staticmethod
+        def quit():
+            pass
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
@@ -66,6 +74,9 @@ class OwnerDashboard(QWidget):
 
         # Menu bar
         menubar = QMenuBar()
+        file_menu = menubar.addMenu("File")
+        exit_action = file_menu.addAction("Exit")
+        exit_action.triggered.connect(QApplication.quit)
         team_menu = menubar.addMenu("Team")
         pos_action = team_menu.addAction("Position Players")
         pit_action = team_menu.addAction("Pitchers")
