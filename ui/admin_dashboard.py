@@ -10,6 +10,8 @@ from PyQt6.QtWidgets import (
     QInputDialog,
     QLineEdit,
     QComboBox,
+    QMenuBar,
+    QApplication,
 )
 from PyQt6.QtCore import Qt
 from ui.team_entry_dialog import TeamEntryDialog
@@ -33,6 +35,12 @@ class AdminDashboard(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
+
+        menubar = QMenuBar()
+        file_menu = menubar.addMenu("File")
+        exit_action = file_menu.addAction("Exit")
+        exit_action.triggered.connect(QApplication.quit)
+        layout.setMenuBar(menubar)
 
         header = QLabel("Welcome to the Admin Dashboard")
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
