@@ -5,7 +5,7 @@ from ui.splash_screen import SplashScreen
 def main():
     app = QApplication(sys.argv)
     splash = SplashScreen()
-    splash.show()
+    splash.showFullScreen()
     sys.exit(app.exec())
 
 if __name__ == "__main__":
