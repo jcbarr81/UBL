@@ -7,13 +7,17 @@ team's ID (lower‑cased).
 from __future__ import annotations
 
 import os
-from typing import List
+from typing import Callable, List, Optional
 
 from images.auto_logo import TeamSpec, batch_generate
 from utils.team_loader import load_teams
 
 
-def generate_team_logos(out_dir: str | None = None, size: int = 512) -> str:
+def generate_team_logos(
+    out_dir: str | None = None,
+    size: int = 512,
+    progress_callback: Optional[Callable[[int, int], None]] = None,
+) -> str:
     """Generate logos for all teams and return the output directory.
 
     Parameters
@@ -23,6 +27,9 @@ def generate_team_logos(out_dir: str | None = None, size: int = 512) -> str:
         project root.
     size:
         Pixel size for the generated square logos.
+    progress_callback:
+        Optional callback receiving ``(completed, total)`` after each logo is
+        saved.
     """
 
     teams = load_teams("data/teams.csv")
@@ -42,5 +49,14 @@ def generate_team_logos(out_dir: str | None = None, size: int = 512) -> str:
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         out_dir = os.path.join(base_dir, "logo", "teams")
     os.makedirs(out_dir, exist_ok=True)
-    batch_generate(specs, out_dir=out_dir, size=size)
+    total = len(specs)
+    completed = 0
+
+    def cb(spec: TeamSpec, path: str) -> None:
+        nonlocal completed
+        completed += 1
+        if progress_callback:
+            progress_callback(completed, total)
+
+    batch_generate(specs, out_dir=out_dir, size=size, callback=cb)
     return out_dir
