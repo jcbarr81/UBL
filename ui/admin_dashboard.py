@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from ui.team_entry_dialog import TeamEntryDialog
+from ui.exhibition_game_dialog import ExhibitionGameDialog
 from utils.trade_utils import load_trades, save_trade
 from utils.news_logger import log_news_event
 from utils.roster_loader import load_roster
@@ -22,9 +23,6 @@ from utils.player_loader import load_players_from_csv
 from utils.team_loader import load_teams
 from utils.user_manager import add_user, load_users, update_user
 from models.trade import Trade
-from logic.simulation import GameSimulation, TeamState
-from models.pitcher import Pitcher
-from logic.pbini_loader import load_pbini
 import csv
 import os
 from logic.league_creator import create_league
@@ -186,82 +184,7 @@ class AdminDashboard(QWidget):
             QMessageBox.warning(self, "Error", f"Failed to generate logos: {e}")
 
     def open_exhibition_dialog(self):
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Simulate Exhibition Game")
-
-        layout = QVBoxLayout()
-
-        team1_combo = QComboBox()
-        team2_combo = QComboBox()
-
-        data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
-        teams = load_teams(os.path.join(data_dir, "teams.csv"))
-        for t in teams:
-            team1_combo.addItem(f"{t.name} ({t.team_id})", userData=t.team_id)
-            team2_combo.addItem(f"{t.name} ({t.team_id})", userData=t.team_id)
-
-        layout.addWidget(QLabel("Home Team:"))
-        layout.addWidget(team1_combo)
-        layout.addWidget(QLabel("Away Team:"))
-        layout.addWidget(team2_combo)
-
-        simulate_btn = QPushButton("Simulate")
-        simulate_btn.setEnabled(False)
-        layout.addWidget(simulate_btn, alignment=Qt.AlignmentFlag.AlignHCenter)
-
-        def update_button():
-            simulate_btn.setEnabled(
-                team1_combo.currentData() is not None
-                and team2_combo.currentData() is not None
-                and team1_combo.currentData() != team2_combo.currentData()
-            )
-
-        team1_combo.currentIndexChanged.connect(update_button)
-        team2_combo.currentIndexChanged.connect(update_button)
-        update_button()
-
-        def simulate():
-            home_id = team1_combo.currentData()
-            away_id = team2_combo.currentData()
-            try:
-                players = {
-                    p.player_id: p
-                    for p in load_players_from_csv(os.path.join(data_dir, "players.csv"))
-                }
-                home_roster = load_roster(home_id, os.path.join(data_dir, "rosters"))
-                away_roster = load_roster(away_id, os.path.join(data_dir, "rosters"))
-
-                def build_state(roster):
-                    lineup = []
-                    bench = []
-                    pitchers = []
-                    for pid in roster.act:
-                        player = players.get(pid)
-                        if not player:
-                            continue
-                        if isinstance(player, Pitcher):
-                            pitchers.append(player)
-                        elif len(lineup) < 9:
-                            lineup.append(player)
-                        else:
-                            bench.append(player)
-                    return TeamState(lineup=lineup, bench=bench, pitchers=pitchers)
-
-                home_state = build_state(home_roster)
-                away_state = build_state(away_roster)
-                cfg = load_pbini(os.path.join(os.path.dirname(__file__), "..", "logic", "PBINI.txt"))
-                sim = GameSimulation(home_state, away_state, cfg)
-                sim.simulate_game()
-                QMessageBox.information(
-                    dialog,
-                    "Simulation Complete",
-                    f"Exhibition game between {home_id} and {away_id} simulated.",
-                )
-            except Exception as e:
-                QMessageBox.warning(dialog, "Error", f"Failed to simulate: {e}")
-
-        simulate_btn.clicked.connect(simulate)
-        dialog.setLayout(layout)
+        dialog = ExhibitionGameDialog(self)
         dialog.exec()
 
     def open_add_user(self):
