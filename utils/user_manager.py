@@ -121,6 +121,24 @@ def update_user(
 
 
 def clear_users(file_path: str = "data/users.txt") -> None:
-    """Remove all user accounts by deleting the users file if it exists."""
+    """Reset the users file to contain only the admin account.
+
+    If ``file_path`` exists, any existing users are discarded and the file is
+    rewritten with only the line beginning with ``"admin,"``. If no such line
+    exists, a default admin account of ``admin,pass,admin,`` is written.
+    The directory for ``file_path`` is created if it does not already exist.
+    """
+    admin_line = None
     if os.path.exists(file_path):
-        os.remove(file_path)
+        with open(file_path, "r") as f:
+            for line in f:
+                if line.startswith("admin,"):
+                    admin_line = line.strip()
+                    break
+
+    if admin_line is None:
+        admin_line = "admin,pass,admin,"
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    with open(file_path, "w") as f:
+        f.write(admin_line.rstrip("\n") + "\n")
