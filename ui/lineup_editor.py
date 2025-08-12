@@ -36,13 +36,14 @@ class LineupEditor(QDialog):
         self.field_overlay.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
         self.position_labels = {}
+        y_offset = 10
         position_coords = {
             "C": (160, 481), "1B": (225, 341), "2B": (220, 289), "SS": (98, 289),
             "3B": (62, 340), "LF": (55, 235), "CF": (158, 200), "RF": (230, 235), "DH": (275, 415)
         }
         for pos, (x, y) in position_coords.items():
             label = QLabel("", self.field_overlay)
-            label.move(x, y)
+            label.move(x, y + y_offset)
             label.setStyleSheet("color: blue; font-size: 9px; font-weight: bold; background-color: rgba(255, 255, 255, 0.6); border-radius: 4px;")
             label.setFixedWidth(100)
             label.setAlignment(Qt.AlignmentFlag.AlignCenter)
