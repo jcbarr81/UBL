@@ -13,6 +13,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
+from ui.player_profile_dialog import PlayerProfileDialog
+
 from models.base_player import BasePlayer
 from models.roster import Roster
 from utils.pitcher_role import get_role
@@ -61,6 +63,7 @@ class PitchersWindow(QDialog):
             lw = QListWidget()
             for player in players:
                 lw.addItem(self._make_pitcher_item(player))
+            lw.itemDoubleClicked.connect(self._open_player_profile)
             label = "Starting Pitchers (SP)" if role == "SP" else "Relief Pitchers (RP)"
             tab_widget.addTab(lw, label)
 
@@ -88,4 +91,14 @@ class PitchersWindow(QDialog):
             )
         except Exception:
             return "?"
+
+    # ------------------------------------------------------------------
+    # Player profile dialog
+    def _open_player_profile(self, item: QListWidgetItem):
+        """Open the player profile dialog for the selected pitcher."""
+        pid = item.data(Qt.ItemDataRole.UserRole)
+        player = self.players.get(pid)
+        if not player:
+            return
+        PlayerProfileDialog(player, self).exec()
 
