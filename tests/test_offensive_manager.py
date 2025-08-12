@@ -1,11 +1,10 @@
 import random
-from pathlib import Path
 
 from logic.offensive_manager import OffensiveManager
-from logic.pbini_loader import load_pbini
 from logic.simulation import GameSimulation, TeamState, BatterState
 from models.player import Player
 from models.pitcher import Pitcher
+from tests.util.pbini_factory import make_cfg, load_config
 
 
 class MockRandom(random.Random):
@@ -17,12 +16,6 @@ class MockRandom(random.Random):
 
     def random(self):  # type: ignore[override]
         return self.values.pop(0)
-
-
-def make_cfg(**entries):
-    return {"PlayBalance": entries}
-
-
 def make_player(pid: str, ph: int = 50, sp: int = 50, ch: int = 50) -> Player:
     return Player(
         player_id=pid,
@@ -73,12 +66,6 @@ def make_pitcher(pid: str) -> Pitcher:
         fa=50,
         role="SP",
     )
-
-
-def load_config():
-    return load_pbini(Path("logic/PBINI.txt"))
-
-
 def test_calculate_steal_chance():
     cfg = make_cfg(
         offManStealChancePct=50,
@@ -116,7 +103,7 @@ def test_hit_and_run_chance_and_advance():
     assert om.maybe_hit_and_run(runner_sp=50, batter_ch=20, batter_ph=20, balls=3) is False
 
     full = load_config()
-    full["PlayBalance"].update({
+    full.values.update({
         "hnrChanceBase": 100,
         "offManHNRChancePct": 100,
         "pitchOutChanceBase": 0,
@@ -164,7 +151,7 @@ def test_sacrifice_bunt_chance_and_advance():
     ) is False
 
     full = load_config()
-    full["PlayBalance"].update({
+    full.values.update({
         "hnrChanceBase": 0,
         "offManHNRChancePct": 0,
         "sacChanceBase": 100,
@@ -197,7 +184,7 @@ def test_suicide_squeeze_chance_and_score():
     assert om.maybe_suicide_squeeze(batter_ch=50, batter_ph=50, balls=0, strikes=0, runner_on_third_sp=50) is False
 
     full = load_config()
-    full["PlayBalance"].update({
+    full.values.update({
         "hnrChanceBase": 0,
         "offManHNRChancePct": 0,
         "sacChanceBase": 0,

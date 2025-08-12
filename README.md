@@ -8,6 +8,23 @@ UBL (Ultimate Baseball League) Simulation is a Python project that models a smal
 - **Game simulation:** `logic/simulation.py` provides a minimal engine for at-bats, pitching changes and base running.
 - **Data files:** example data lives in the `data/` directory including rosters, lineups and configuration values.
 
+### Play balance configuration
+
+Strategy behaviour in the simulation is driven by values from the
+`PlayBalance` section of the historical *PB.INI* file.  The configuration is
+loaded into a dedicated :class:`PlayBalanceConfig` dataclass
+(`logic/playbalance_config.py`) which exposes the entries as attributes with
+safe defaults.  The managers and `GameSimulation` consume this object instead
+of raw dictionaries.
+
+For tests and experimentation a helper factory is provided in
+`tests/util/pbini_factory.py` which can create minimal configurations:
+
+```python
+from tests.util.pbini_factory import make_cfg
+cfg = make_cfg(offManStealChancePct=50)
+```
+
 ## Lineup CSV Format
 Lineup files live in `data/lineups/` and are named `<TEAM>_vs_lhp.csv` or `<TEAM>_vs_rhp.csv`.
 Each file contains the columns:
@@ -30,6 +47,13 @@ Tests are located in the `tests/` directory and can be executed with:
 
 ```bash
 pytest
+```
+
+To run a single exhibition style scenario you can target an individual test,
+for example:
+
+```bash
+pytest tests/test_simulation.py::test_run_tracking_and_boxscore -q
 ```
 
 ### Default Admin Credentials

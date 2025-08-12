@@ -15,10 +15,11 @@ user can manually verify that substitutions occurred.
 """
 
 import random
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from models.player import Player
 from models.pitcher import Pitcher
+from .playbalance_config import PlayBalanceConfig
 
 if TYPE_CHECKING:  # pragma: no cover - used only for type checking
     from .simulation import BatterState, PitcherState, TeamState
@@ -29,15 +30,15 @@ class SubstitutionManager:
 
     Only small pieces of the real game's behaviour are implemented – enough
     for the unit tests to exercise the different code paths.  Chances for the
-    various substitutions are read from the ``PlayBalance`` section of the
-    parsed PB.INI configuration.  If a required key is missing the chance will
-    simply be zero which results in the substitution never triggering.
+    various substitutions are read from the ``PlayBalance`` configuration.  If
+    a required key is missing the chance will simply be zero which results in
+    the substitution never triggering.
     """
 
     def __init__(
-        self, pbini: Dict[str, Dict[str, int]], rng: Optional[random.Random] = None
+        self, config: PlayBalanceConfig, rng: Optional[random.Random] = None
     ) -> None:
-        self.config = pbini.get("PlayBalance", {})
+        self.config = config
         self.rng = rng or random.Random()
 
     # ------------------------------------------------------------------

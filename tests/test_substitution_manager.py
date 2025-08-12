@@ -1,12 +1,10 @@
-from pathlib import Path
-
 import random
 
-from logic.pbini_loader import load_pbini
 from logic.simulation import BatterState, TeamState
 from logic.substitution_manager import SubstitutionManager
 from models.player import Player
 from models.pitcher import Pitcher
+from tests.util.pbini_factory import load_config
 
 
 class MockRandom(random.Random):
@@ -72,15 +70,9 @@ def make_pitcher(pid: str, endurance: int = 100) -> Pitcher:
         fa=50,
         role="SP",
     )
-
-
-def load_config():
-    return load_pbini(Path("logic/PBINI.txt"))
-
-
 def test_pinch_hit():
     cfg = load_config()
-    cfg["PlayBalance"].update({"doubleSwitchPHAdjust": 100})
+    cfg.values.update({"doubleSwitchPHAdjust": 100})
     bench = make_player("bench", ph=80)
     starter = make_player("start", ph=10)
     team = TeamState(lineup=[starter], bench=[bench], pitchers=[make_pitcher("p")])
@@ -92,7 +84,7 @@ def test_pinch_hit():
 
 def test_pinch_run():
     cfg = load_config()
-    cfg["PlayBalance"].update({"pinchRunChance": 100})
+    cfg.values.update({"pinchRunChance": 100})
     runner = make_player("slow", sp=10)
     fast = make_player("fast", sp=90)
     team = TeamState(lineup=[runner], bench=[fast], pitchers=[make_pitcher("p")])
@@ -107,7 +99,7 @@ def test_pinch_run():
 
 def test_defensive_sub():
     cfg = load_config()
-    cfg["PlayBalance"].update({"defSubChance": 100})
+    cfg.values.update({"defSubChance": 100})
     weak = make_player("weak", gf=10)
     strong = make_player("strong", gf=90)
     team = TeamState(lineup=[weak], bench=[strong], pitchers=[make_pitcher("p")])
@@ -118,7 +110,7 @@ def test_defensive_sub():
 
 def test_double_switch():
     cfg = load_config()
-    cfg["PlayBalance"].update({"doubleSwitchChance": 100, "doubleSwitchPHAdjust": 100})
+    cfg.values.update({"doubleSwitchChance": 100, "doubleSwitchPHAdjust": 100})
     bench_hitter = make_player("bench", ph=80)
     starter = make_player("start", ph=10)
     offense = TeamState(lineup=[starter], bench=[bench_hitter], pitchers=[make_pitcher("op")])

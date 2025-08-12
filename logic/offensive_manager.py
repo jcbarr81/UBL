@@ -2,24 +2,23 @@ from __future__ import annotations
 
 import random
 from pathlib import Path
-from typing import Any, Dict
 
-from .pbini_loader import load_pbini
+from .playbalance_config import PlayBalanceConfig
 
 
 class OffensiveManager:
     """Handle offensive strategy decisions based on PB.INI configuration."""
 
-    def __init__(self, pbini: Dict[str, Dict[str, Any]], rng: random.Random | None = None) -> None:
-        self.config = pbini.get("PlayBalance", {})
+    def __init__(self, config: PlayBalanceConfig, rng: random.Random | None = None) -> None:
+        self.config = config
         self.rng = rng or random.Random()
 
     @classmethod
     def from_file(
         cls, path: str | Path, rng: random.Random | None = None
     ) -> "OffensiveManager":
-        pbini = load_pbini(path)
-        return cls(pbini, rng)
+        cfg = PlayBalanceConfig.from_file(path)
+        return cls(cfg, rng)
 
     # ------------------------------------------------------------------
     # Helpers

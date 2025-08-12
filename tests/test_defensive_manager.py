@@ -1,19 +1,18 @@
-from logic.defensive_manager import DefensiveManager
-
 import random
+
+from logic.defensive_manager import DefensiveManager
+from tests.util.pbini_factory import make_cfg
 
 
 class MockRandom(random.Random):
+    """Deterministic random generator using a predefined sequence."""
+
     def __init__(self, values):
         super().__init__()
         self.values = list(values)
 
     def random(self):  # type: ignore[override]
         return self.values.pop(0)
-
-
-def make_cfg(**entries):
-    return {"PlayBalance": entries}
 
 
 def test_charge_bunt_chance():

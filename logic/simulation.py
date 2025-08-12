@@ -9,6 +9,7 @@ from models.pitcher import Pitcher
 from logic.defensive_manager import DefensiveManager
 from logic.offensive_manager import OffensiveManager
 from logic.substitution_manager import SubstitutionManager
+from logic.playbalance_config import PlayBalanceConfig
 
 
 @dataclass
@@ -67,16 +68,16 @@ class GameSimulation:
         self,
         home: TeamState,
         away: TeamState,
-        pbini: Dict[str, Dict[str, int]],
+        config: PlayBalanceConfig,
         rng: Optional[random.Random] = None,
     ) -> None:
         self.home = home
         self.away = away
-        self.config = pbini.get("PlayBalance", {})
+        self.config = config
         self.rng = rng or random.Random()
-        self.defense = DefensiveManager(pbini, self.rng)
-        self.offense = OffensiveManager(pbini, self.rng)
-        self.subs = SubstitutionManager(pbini, self.rng)
+        self.defense = DefensiveManager(config, self.rng)
+        self.offense = OffensiveManager(config, self.rng)
+        self.subs = SubstitutionManager(config, self.rng)
         self.debug_log: List[str] = []
 
     # ------------------------------------------------------------------
