@@ -7,7 +7,7 @@ relative to the repository root and named after the player's ID.
 from __future__ import annotations
 
 import os
-from typing import Dict
+from typing import Callable, Dict, Optional
 
 from PIL import Image
 
@@ -17,7 +17,11 @@ from utils.team_loader import load_teams
 from utils.roster_loader import load_roster
 
 
-def generate_player_avatars(out_dir: str | None = None, size: int = 512) -> str:
+def generate_player_avatars(
+    out_dir: str | None = None,
+    size: int = 512,
+    progress_callback: Optional[Callable[[int, int], None]] = None,
+) -> str:
     """Generate avatar images for all players and return the output directory.
 
     Parameters
@@ -27,6 +31,9 @@ def generate_player_avatars(out_dir: str | None = None, size: int = 512) -> str:
         the project root.
     size:
         Pixel size for the generated square avatars.
+    progress_callback:
+        Optional callback receiving ``(completed, total)`` after each avatar is
+        saved. Useful for updating progress displays.
     """
 
     players = {p.player_id: p for p in load_players_from_csv("data/players.csv")}
@@ -41,6 +48,10 @@ def generate_player_avatars(out_dir: str | None = None, size: int = 512) -> str:
             continue
         for pid in roster.act + roster.aaa + roster.low:
             player_team[pid] = t.team_id
+
+    # Determine total number of players that will have avatars generated
+    total = sum(1 for pid in players if pid in player_team)
+    completed = 0
 
     if out_dir is None:
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -66,5 +77,9 @@ def generate_player_avatars(out_dir: str | None = None, size: int = 512) -> str:
         # Smaller version for UI thumbnails
         thumb = img.resize((150, 150), resample=Image.LANCZOS)
         thumb.save(os.path.join(out_dir, f"{pid}_150.png"))
+
+        completed += 1
+        if progress_callback:
+            progress_callback(completed, total)
 
     return out_dir
