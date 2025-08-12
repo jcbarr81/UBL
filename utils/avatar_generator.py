@@ -21,6 +21,12 @@ def generate_player_avatars(
     out_dir: str | None = None,
     size: int = 512,
     progress_callback: Optional[Callable[[int, int], None]] = None,
+    *,
+    use_sdxl: bool = False,
+    players: Dict[str, object] | None = None,
+    teams: list | None = None,
+    controlnet_path: str | None = None,
+    ip_adapter_path: str | None = None,
 ) -> str:
     """Generate avatar images for all players and return the output directory.
 
@@ -36,8 +42,23 @@ def generate_player_avatars(
         saved. Useful for updating progress displays.
     """
 
-    players = {p.player_id: p for p in load_players_from_csv("data/players.csv")}
-    teams = load_teams("data/teams.csv")
+    if use_sdxl:
+        from utils.ubl_avatar_generator import generate_player_avatars_sdxl
+
+        return generate_player_avatars_sdxl(
+            out_dir=out_dir,
+            size=size,
+            progress_callback=progress_callback,
+            players=players,
+            teams=teams,
+            controlnet_path=controlnet_path,
+            ip_adapter_path=ip_adapter_path,
+        )
+
+    if players is None:
+        players = {p.player_id: p for p in load_players_from_csv("data/players.csv")}
+    if teams is None:
+        teams = load_teams("data/teams.csv")
 
     # Map each player ID to their team ID via roster files
     player_team: Dict[str, str] = {}
@@ -83,3 +104,19 @@ def generate_player_avatars(
             progress_callback(completed, total)
 
     return out_dir
+
+
+if __name__ == "__main__":  # pragma: no cover - CLI helper
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate player avatars")
+    parser.add_argument("--sdxl", action="store_true", help="Use SDXL model")
+    parser.add_argument("--controlnet", type=str, default=None)
+    parser.add_argument("--ip-adapter", type=str, default=None)
+    args = parser.parse_args()
+
+    generate_player_avatars(
+        use_sdxl=args.sdxl,
+        controlnet_path=args.controlnet,
+        ip_adapter_path=args.ip_adapter,
+    )

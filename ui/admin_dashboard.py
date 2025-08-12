@@ -212,6 +212,30 @@ class AdminDashboard(QWidget):
         players = {p.player_id: p for p in load_players_from_csv("data/players.csv")}
         teams = load_teams("data/teams.csv")
 
+        # Ask the admin which generation method to use
+        method, ok = QInputDialog.getItem(
+            self,
+            "Avatar Generation",
+            "Select generation method:",
+            ["Basic", "SDXL"],
+            0,
+            False,
+        )
+        if not ok:
+            return
+
+        controlnet = None
+        ip_adapter = None
+        if method == "SDXL":
+            controlnet, _ = QInputDialog.getText(
+                self, "ControlNet Path", "Optional ControlNet model path:"
+            )
+            ip_adapter, _ = QInputDialog.getText(
+                self, "IP-Adapter Path", "Optional IP-Adapter model path:"
+            )
+            controlnet = controlnet or None
+            ip_adapter = ip_adapter or None
+
         player_ids = set()
         for t in teams:
             try:
@@ -239,7 +263,15 @@ class AdminDashboard(QWidget):
 
         try:
             from utils.avatar_generator import generate_player_avatars as gen_avatars
-            out_dir = gen_avatars(progress_callback=cb)
+
+            out_dir = gen_avatars(
+                progress_callback=cb,
+                use_sdxl=method == "SDXL",
+                players=players,
+                teams=teams,
+                controlnet_path=controlnet,
+                ip_adapter_path=ip_adapter,
+            )
             QMessageBox.information(
                 self,
                 "Avatars Generated",
