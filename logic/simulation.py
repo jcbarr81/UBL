@@ -8,6 +8,7 @@ from models.player import Player
 from models.pitcher import Pitcher
 from logic.defensive_manager import DefensiveManager
 from logic.offensive_manager import OffensiveManager
+from logic.substitution_manager import SubstitutionManager
 
 
 @dataclass
@@ -75,6 +76,7 @@ class GameSimulation:
         self.rng = rng or random.Random()
         self.defense = DefensiveManager(pbini, self.rng)
         self.offense = OffensiveManager(pbini, self.rng)
+        self.subs = SubstitutionManager(pbini, self.rng)
         self.debug_log: List[str] = []
 
     # ------------------------------------------------------------------
@@ -92,6 +94,9 @@ class GameSimulation:
             self._play_half(self.home, self.away)  # Bottom half
 
     def _play_half(self, offense: TeamState, defense: TeamState) -> None:
+        # Allow the defensive team to consider a late inning defensive swap
+        self.subs.maybe_defensive_sub(defense, self.debug_log)
+
         start_runs = offense.runs
         outs = 0
         while outs < 3:
@@ -102,7 +107,10 @@ class GameSimulation:
     def play_at_bat(self, offense: TeamState, defense: TeamState) -> int:
         """Play a single at-bat.  Returns the number of outs recorded."""
 
-        self._maybe_change_pitcher(defense)
+        self.subs.maybe_change_pitcher(defense, self.debug_log)
+
+        # Check if any existing runner should be replaced with a pinch runner
+        self.subs.maybe_pinch_run(offense, log=self.debug_log)
 
         # Defensive decisions prior to the at-bat.  These mostly log the
         # outcome for manual inspection in the exhibition dialog.  The
@@ -123,7 +131,11 @@ class GameSimulation:
             self.debug_log.append("Pitch around")
 
         batter_idx = offense.batting_index % len(offense.lineup)
-        batter = self._maybe_pinch_hit(offense, batter_idx)
+        batter = self.subs.maybe_double_switch(
+            offense, defense, batter_idx, self.debug_log
+        )
+        if batter is None:
+            batter = self.subs.maybe_pinch_hit(offense, batter_idx, self.debug_log)
         offense.batting_index += 1
 
         batter_state = offense.lineup_stats.setdefault(
@@ -207,18 +219,6 @@ class GameSimulation:
     # ------------------------------------------------------------------
     # Pinch hitting
     # ------------------------------------------------------------------
-    def _maybe_pinch_hit(self, team: TeamState, idx: int) -> Player:
-        if not team.bench:
-            return team.lineup[idx]
-        chance = self.config.get("doubleSwitchPHAdjust", 0) / 100.0
-        starter = team.lineup[idx]
-        best = max(team.bench, key=lambda p: p.ph, default=None)
-        if best and best.ph > starter.ph and self.rng.random() < chance:
-            team.bench.remove(best)
-            team.lineup[idx] = best
-            return best
-        return starter
-
     # ------------------------------------------------------------------
     # Swing outcome
     # ------------------------------------------------------------------
@@ -279,20 +279,6 @@ class GameSimulation:
     # ------------------------------------------------------------------
     # Pitching changes
     # ------------------------------------------------------------------
-    def _maybe_change_pitcher(self, defense: TeamState) -> None:
-        state = defense.current_pitcher_state
-        if state is None:
-            return
-        remaining = state.player.endurance - state.pitches_thrown
-        thresh = self.config.get("pitcherTiredThresh", 0)
-        if remaining <= thresh and len(defense.pitchers) > 1:
-            defense.pitchers.pop(0)
-            new_pitcher = defense.pitchers[0]
-            state = defense.pitcher_stats.setdefault(
-                new_pitcher.player_id, PitcherState(new_pitcher)
-            )
-            defense.current_pitcher_state = state
-
 
 def generate_boxscore(home: TeamState, away: TeamState) -> Dict[str, Dict[str, object]]:
     """Return a simplified box score for ``home`` and ``away`` teams."""
