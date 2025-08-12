@@ -41,6 +41,21 @@ from utils.team_loader import load_teams, save_team_settings
 from utils.pitcher_role import get_role
 
 
+def _hex_to_rgb(value: str) -> tuple[int, int, int]:
+    """Convert ``#RRGGBB`` or ``#RGB`` strings to an (r, g, b) tuple."""
+    value = value.lstrip("#")
+    if len(value) == 3:
+        value = "".join(ch * 2 for ch in value)
+    return tuple(int(value[i : i + 2], 16) for i in (0, 2, 4))
+
+
+def _contrast_text_color(hex_color: str) -> str:
+    """Return black or white for legible text on ``hex_color`` backgrounds."""
+    r, g, b = _hex_to_rgb(hex_color)
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    return "#000000" if luminance > 180 else "#ffffff"
+
+
 class OwnerDashboard(QWidget):
     """Owner-facing dashboard showing roster and quick actions.
 
@@ -164,9 +179,27 @@ class OwnerDashboard(QWidget):
         main.addWidget(self.news_feed)
 
         self.setLayout(main)
+        self.apply_team_colors()
+        # Re-apply explicit style for the news feed to override theme background
+        self.news_feed.setStyleSheet("background-color:#1e1e1e;color:#ffffff;")
         self.load_news_feed()
         self.update_roster_count_display()
         self.update_window_title()
+
+    def apply_team_colors(self):
+        """Apply the team's color scheme to the dashboard."""
+        if not self.team:
+            return
+        primary = self.team.primary_color
+        secondary = self.team.secondary_color
+        text_color = _contrast_text_color(primary)
+        button_text = _contrast_text_color(secondary)
+        self.setStyleSheet(
+            f"""
+            QWidget {{background-color: {primary}; color: {text_color};}}
+            QPushButton {{background-color: {secondary}; color: {button_text};}}
+            """
+        )
 
     # ---------- UI helpers ----------
     def _build_roster_list(self, player_ids):
@@ -232,6 +265,9 @@ class OwnerDashboard(QWidget):
             self.team.secondary_color = settings["secondary_color"]
             self.team.stadium = settings["stadium"]
             save_team_settings(self.team)
+            self.apply_team_colors()
+            # Preserve dark theme for news feed
+            self.news_feed.setStyleSheet("background-color:#1e1e1e;color:#ffffff;")
             QMessageBox.information(self, "Saved", "Team settings updated.")
 
     def move_selected_player(self):
