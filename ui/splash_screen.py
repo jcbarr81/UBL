@@ -1,12 +1,12 @@
 import os
 from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QFont
 from PyQt6.QtCore import Qt
 
 from ui.login_window import LoginWindow
 
 class SplashScreen(QWidget):
-    """Initial splash screen displaying the UBL logo and login button."""
+    """Initial splash screen displaying the UBL logo and start button."""
 
     def __init__(self):
         super().__init__()
@@ -27,13 +27,17 @@ class SplashScreen(QWidget):
 
         layout.addStretch()
 
-        self.login_button = QPushButton("Login")
+        self.login_button = QPushButton("Start Game")
+        font = self.login_button.font()
+        font.setPointSize(18)
+        font.setBold(True)
+        self.login_button.setFont(font)
         self.login_button.clicked.connect(self.open_login)
         layout.addWidget(self.login_button, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # Add a stretch below the login button to push it upward for a
+        # Add a larger stretch below the button to push it upward for a
         # more balanced appearance on the splash screen.
-        layout.addStretch()
+        layout.addStretch(2)
 
         self.setLayout(layout)
         self.login_window = None
