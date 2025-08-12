@@ -13,6 +13,7 @@ class TeamSpec:
     abbrev: Optional[str] = None    # e.g. "NYC"
     template: str = "circle"        # "circle" | "shield" | "cap"
     field_background: bool = True   # faint diamond behind the mark
+    seed: int | None = None         # optional seed for deterministic logos
 
 # ------------------ Utilities ------------------
 def _hex_to_rgb(h: str) -> Tuple[int,int,int]:
@@ -57,12 +58,11 @@ PALETTES = {
     "classic": [("#0a3161","#c8102e"),("#00274c","#ffcb05"),("#004225","#ffdd00")]
 }
 
-def choose_colors(spec: TeamSpec):
+def choose_colors(spec: TeamSpec, rnd: random.Random):
     if spec.primary and spec.secondary:
         return _hex_to_rgb(spec.primary), _hex_to_rgb(spec.secondary)
-    random.seed(_seed_from_name(spec.location, spec.mascot))
     cat = _categorize(spec.mascot)
-    pal = random.choice(PALETTES[cat])
+    pal = rnd.choice(PALETTES[cat])
     return _hex_to_rgb(pal[0]), _hex_to_rgb(pal[1])
 
 # ------------------ Drawing primitives ------------------
@@ -122,8 +122,8 @@ def _load_font(preferred: Optional[str], size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.load_default()
 
 # ------------------ Templates ------------------
-def _render_circle_badge(spec: TeamSpec, size=1024, font_path: Optional[str]=None) -> Image.Image:
-    primary, secondary = choose_colors(spec)
+def _render_circle_badge(spec: TeamSpec, rnd: random.Random, size=1024, font_path: Optional[str]=None) -> Image.Image:
+    primary, secondary = choose_colors(spec, rnd)
     img = Image.new("RGB", (size,size))
     _draw_radial_gradient(img, _blend(primary,(0,0,0),0.2), _blend(primary,(0,0,0),0.6))
     w,h = img.size; draw = ImageDraw.Draw(img, 'RGBA')
@@ -156,8 +156,8 @@ def _render_circle_badge(spec: TeamSpec, size=1024, font_path: Optional[str]=Non
     img = Image.composite(Image.new("RGB",(w,h),(255,255,255)), img, gloss.point(lambda p: int(p*0.4)))
     return img
 
-def _render_shield(spec: TeamSpec, size=1024, font_path: Optional[str]=None) -> Image.Image:
-    primary, secondary = choose_colors(spec)
+def _render_shield(spec: TeamSpec, rnd: random.Random, size=1024, font_path: Optional[str]=None) -> Image.Image:
+    primary, secondary = choose_colors(spec, rnd)
     base = Image.new("RGB", (size,size))
     _draw_radial_gradient(base, _blend(primary,(0,0,0),0.15), _blend(primary,(0,0,0),0.55))
     w,h = base.size; draw = ImageDraw.Draw(base, 'RGBA')
@@ -186,8 +186,8 @@ def _render_shield(spec: TeamSpec, size=1024, font_path: Optional[str]=None) -> 
     _stroke_text(draw, (nx, int(h*0.60)), nick, f_nick, fill=(255,255,255), stroke_fill=(0,0,0,220), stroke_width=int(size*0.008))
     return base
 
-def _render_cap(spec: TeamSpec, size=1024, font_path: Optional[str]=None) -> Image.Image:
-    primary, secondary = choose_colors(spec)
+def _render_cap(spec: TeamSpec, rnd: random.Random, size=1024, font_path: Optional[str]=None) -> Image.Image:
+    primary, secondary = choose_colors(spec, rnd)
     img = Image.new("RGB", (size,size), primary)
     if spec.field_background:
         img = _draw_field_background(img, color=(255,255,255), alpha=22, scale=0.7)
@@ -200,11 +200,23 @@ def _render_cap(spec: TeamSpec, size=1024, font_path: Optional[str]=None) -> Ima
     return img
 
 # ------------------ Public API ------------------
-def generate_logo(spec: TeamSpec, size: int = 1024, font_path: Optional[str]=None) -> Image.Image:
+def generate_logo(
+    spec: TeamSpec,
+    size: int = 1024,
+    font_path: Optional[str] = None,
+    rnd: Optional[random.Random] = None,
+) -> Image.Image:
+    seed = spec.seed or _seed_from_name(spec.location, spec.mascot)
+    rnd = rnd or random.Random(seed)
     t = (spec.template or "circle").lower()
-    if t == "circle": return _render_circle_badge(spec, size=size, font_path=font_path)
-    if t == "shield": return _render_shield(spec, size=size, font_path=font_path)
-    if t == "cap":    return _render_cap(spec, size=size, font_path=font_path)
+    if t == "auto":
+        t = rnd.choice(["circle", "shield", "cap"])
+    if t == "circle":
+        return _render_circle_badge(spec, rnd, size=size, font_path=font_path)
+    if t == "shield":
+        return _render_shield(spec, rnd, size=size, font_path=font_path)
+    if t == "cap":
+        return _render_cap(spec, rnd, size=size, font_path=font_path)
     raise ValueError(f"Unknown template: {spec.template}")
 
 def save_logo(img: Image.Image, out_path: str, dpi: int=300):
@@ -220,7 +232,9 @@ def batch_generate(
 ):
     os.makedirs(out_dir, exist_ok=True)
     for t in teams:
-        img = generate_logo(t, size=size, font_path=font_path)
+        seed = t.seed or _seed_from_name(t.location, t.mascot)
+        rnd = random.Random(seed)
+        img = generate_logo(t, size=size, font_path=font_path, rnd=rnd)
         filename = f"{(t.abbrev or (t.location+' '+t.mascot)).replace(' ', '_').lower()}.png"
         path = os.path.join(out_dir, filename)
         save_logo(img, path)

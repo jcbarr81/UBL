@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 from typing import Callable, List, Optional
 
-from images.auto_logo import TeamSpec, batch_generate
+from images.auto_logo import TeamSpec, batch_generate, _seed_from_name
 from utils.team_loader import load_teams
 
 
@@ -42,6 +42,8 @@ def generate_team_logos(
                 primary=t.primary_color,
                 secondary=t.secondary_color,
                 abbrev=t.team_id,
+                template="auto",
+                seed=_seed_from_name(t.name, t.city),
             )
         )
 
