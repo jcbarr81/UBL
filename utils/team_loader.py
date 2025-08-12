@@ -1,4 +1,5 @@
 import csv
+import re
 from models.team import Team
 
 def load_teams(file_path="data/teams.csv"):
@@ -29,14 +30,29 @@ def save_team_settings(team: Team, file_path="data/teams.csv") -> None:
     other information remains unchanged.
     """
 
+    def _sanitize_color(value: str, field: str) -> str:
+        """Return a normalized hex color or raise ``ValueError``.
+
+        The function ensures the color string begins with ``#`` and matches the
+        ``#RRGGBB`` or ``#RGB`` formats. If the value cannot be normalized into a
+        valid hex color a descriptive ``ValueError`` is raised.
+        """
+
+        value = value.strip()
+        if not value.startswith("#"):
+            value = f"#{value}"
+        if re.fullmatch(r"#(?:[0-9a-fA-F]{3}){1,2}$", value):
+            return value.upper()
+        raise ValueError(f"Invalid hex color for {field}: {value}")
+
     teams = []
     with open(file_path, mode="r", newline="") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             if row["team_id"] == team.team_id:
                 row["stadium"] = team.stadium
-                row["primary_color"] = team.primary_color
-                row["secondary_color"] = team.secondary_color
+                row["primary_color"] = _sanitize_color(team.primary_color, "primary_color")
+                row["secondary_color"] = _sanitize_color(team.secondary_color, "secondary_color")
             teams.append(row)
 
     fieldnames = [
