@@ -109,6 +109,13 @@ class ExhibitionGameDialog(QDialog):
             sim.simulate_game()
             box = generate_boxscore(home_state, away_state)
             text = self._format_box_score(home_id, away_id, box)
+            if sim.debug_log:
+                text += "\n\nDefensive Log:\n" + "\n".join(sim.debug_log)
+            positions = sim.defense.set_field_positions()
+            if positions:
+                text += "\n\nField Positions:\n"
+                for sit, pos in positions.items():
+                    text += f"{sit}: {pos}\n"
             self.box_score.setPlainText(text)
         except FileNotFoundError as e:
             QMessageBox.warning(self, "Missing Data", str(e))
