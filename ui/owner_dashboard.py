@@ -25,7 +25,7 @@ except ImportError:  # pragma: no cover - fallback for environments without PyQt
         def quit():
             pass
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QPixmap
 
 from ui.lineup_editor import LineupEditor
 from ui.pitching_editor import PitchingEditor
@@ -107,6 +107,20 @@ class OwnerDashboard(QWidget):
         league_menu.addAction("Standings")
         league_menu.addAction("Schedule")
         main.setMenuBar(menubar)
+
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        logo_path = os.path.join(base_dir, "logo", "teams", f"{team_id.lower()}.png")
+        if os.path.exists(logo_path):
+            logo_label = QLabel()
+            pix = QPixmap(logo_path).scaled(
+                128,
+                128,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
+            logo_label.setPixmap(pix)
+            logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            main.addWidget(logo_label)
 
         welcome = QLabel(f"Welcome, Owner of {team_id}!")
         welcome.setFont(bold)

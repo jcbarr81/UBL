@@ -68,6 +68,10 @@ class AdminDashboard(QWidget):
         self.edit_user_button.clicked.connect(self.open_edit_user)
         button_layout.addWidget(self.edit_user_button, alignment=Qt.AlignmentFlag.AlignHCenter)
 
+        self.generate_logos_button = QPushButton("Generate Team Logos")
+        self.generate_logos_button.clicked.connect(self.generate_team_logos)
+        button_layout.addWidget(self.generate_logos_button, alignment=Qt.AlignmentFlag.AlignHCenter)
+
         layout.addLayout(button_layout)
         layout.addStretch()
 
@@ -161,6 +165,18 @@ class AdminDashboard(QWidget):
         layout.addLayout(btn_layout)
         dialog.setLayout(layout)
         dialog.exec()
+
+    def generate_team_logos(self):
+        try:
+            from utils.logo_generator import generate_team_logos
+            out_dir = generate_team_logos()
+            QMessageBox.information(
+                self,
+                "Logos Generated",
+                f"Team logos created in: {out_dir}",
+            )
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to generate logos: {e}")
 
     def open_add_user(self):
         dialog = QDialog(self)
