@@ -7,6 +7,7 @@ from typing import Dict, List, Optional
 from models.player import Player
 from models.pitcher import Pitcher
 from logic.defensive_manager import DefensiveManager
+from logic.offensive_manager import OffensiveManager
 
 
 @dataclass
@@ -73,6 +74,7 @@ class GameSimulation:
         self.config = pbini.get("PlayBalance", {})
         self.rng = rng or random.Random()
         self.defense = DefensiveManager(pbini, self.rng)
+        self.offense = OffensiveManager(pbini, self.rng)
         self.debug_log: List[str] = []
 
     # ------------------------------------------------------------------
@@ -135,10 +137,66 @@ class GameSimulation:
         batter_state.at_bats += 1
 
         outs = 0
+
+        runner_state = offense.bases[0]
+        inning = len(offense.inning_runs) + 1
+        run_diff = offense.runs - defense.runs
+
+        if runner_state:
+            if self.offense.maybe_hit_and_run(
+                runner_sp=runner_state.player.sp,
+                batter_ch=batter.ch,
+                batter_ph=batter.ph,
+            ):
+                self.debug_log.append("Hit and run")
+                steal_result = self._attempt_steal(
+                    offense, pitcher_state.player, force=True
+                )
+                if steal_result is False:
+                    outs += 1
+            elif self.offense.maybe_sacrifice_bunt(
+                batter_is_pitcher=batter.primary_position == "P",
+                batter_ch=batter.ch,
+                batter_ph=batter.ph,
+                outs=outs,
+                inning=inning,
+                on_first=offense.bases[0] is not None,
+                on_second=offense.bases[1] is not None,
+                run_diff=run_diff,
+            ):
+                self.debug_log.append("Sacrifice bunt")
+                b = offense.bases
+                if b[2]:
+                    offense.runs += 1
+                    b[2] = None
+                if b[1]:
+                    b[2] = b[1]
+                    b[1] = None
+                if b[0]:
+                    b[1] = b[0]
+                    b[0] = None
+                outs += 1
+                return outs
+
+        if offense.bases[2] and self.offense.maybe_suicide_squeeze(
+            batter_ch=batter.ch,
+            batter_ph=batter.ph,
+            balls=0,
+            strikes=0,
+            runner_on_third_sp=offense.bases[2].player.sp,
+        ):
+            self.debug_log.append("Suicide squeeze")
+            offense.runs += 1
+            offense.bases[2] = None
+            outs += 1
+            return outs
+
         if self._swing_result(batter, pitcher_state.player):
             batter_state.hits += 1
             self._advance_runners(offense, batter_state)
-            steal_result = self._attempt_steal(offense, pitcher_state.player)
+            steal_result = self._attempt_steal(
+                offense, pitcher_state.player, batter=batter
+            )
             if steal_result is False:  # Runner thrown out
                 outs += 1
         else:
@@ -186,29 +244,28 @@ class GameSimulation:
     # ------------------------------------------------------------------
     # Steal attempts
     # ------------------------------------------------------------------
-    def _steal_chance(self, runner: Player, pitcher: Pitcher) -> float:
-        cfg = self.config
-        base = cfg.get("offManStealChancePct", 0) / 100.0
-        sp = runner.sp
-        if sp <= cfg.get("stealChanceVerySlowThresh", 0):
-            adjust = cfg.get("stealChanceVerySlowAdjust", 0)
-        elif sp <= cfg.get("stealChanceSlowThresh", 0):
-            adjust = cfg.get("stealChanceSlowAdjust", 0)
-        elif sp <= cfg.get("stealChanceMedThresh", 0):
-            adjust = cfg.get("stealChanceMedAdjust", 0)
-        elif sp <= cfg.get("stealChanceFastThresh", 0):
-            adjust = cfg.get("stealChanceFastAdjust", 0)
-        else:
-            adjust = cfg.get("stealChanceVeryFastAdjust", 0)
-        chance = base + adjust / 100.0
-        return max(0.0, min(1.0, chance))
-
-    def _attempt_steal(self, offense: TeamState, pitcher: Pitcher) -> Optional[bool]:
+    def _attempt_steal(
+        self,
+        offense: TeamState,
+        pitcher: Pitcher,
+        *,
+        force: bool = False,
+        batter: Player | None = None,
+    ) -> Optional[bool]:
         runner_state = offense.bases[0]
         if not runner_state:
             return None
-        chance = self._steal_chance(runner_state.player, pitcher)
-        if self.rng.random() < chance:
+        attempt = force
+        if not attempt:
+            batter_ch = batter.ch if batter else 50
+            chance = self.offense.calculate_steal_chance(
+                runner_sp=runner_state.player.sp,
+                pitcher_hold=pitcher.hold_runner,
+                pitcher_is_left=pitcher.bats == "L",
+                batter_ch=batter_ch,
+            )
+            attempt = self.rng.random() < chance
+        if attempt:
             success_prob = 0.7
             if self.rng.random() < success_prob:
                 offense.bases[0] = None

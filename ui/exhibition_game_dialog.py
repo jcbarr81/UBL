@@ -110,7 +110,7 @@ class ExhibitionGameDialog(QDialog):
             box = generate_boxscore(home_state, away_state)
             text = self._format_box_score(home_id, away_id, box)
             if sim.debug_log:
-                text += "\n\nDefensive Log:\n" + "\n".join(sim.debug_log)
+                text += "\n\nStrategy Log:\n" + "\n".join(sim.debug_log)
             positions = sim.defense.set_field_positions()
             if positions:
                 text += "\n\nField Positions:\n"
