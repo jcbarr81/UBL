@@ -73,6 +73,10 @@ class AdminDashboard(QWidget):
         self.generate_logos_button.clicked.connect(self.generate_team_logos)
         button_layout.addWidget(self.generate_logos_button, alignment=Qt.AlignmentFlag.AlignHCenter)
 
+        self.generate_avatars_button = QPushButton("Generate Player Avatars")
+        self.generate_avatars_button.clicked.connect(self.generate_player_avatars)
+        button_layout.addWidget(self.generate_avatars_button, alignment=Qt.AlignmentFlag.AlignHCenter)
+
         self.exhibition_button = QPushButton("Simulate Exhibition Game")
         self.exhibition_button.clicked.connect(self.open_exhibition_dialog)
         button_layout.addWidget(self.exhibition_button, alignment=Qt.AlignmentFlag.AlignHCenter)
@@ -182,6 +186,18 @@ class AdminDashboard(QWidget):
             )
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to generate logos: {e}")
+
+    def generate_player_avatars(self):
+        try:
+            from utils.avatar_generator import generate_player_avatars as gen_avatars
+            out_dir = gen_avatars()
+            QMessageBox.information(
+                self,
+                "Avatars Generated",
+                f"Player avatars created in: {out_dir}",
+            )
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to generate avatars: {e}")
 
     def open_exhibition_dialog(self):
         dialog = ExhibitionGameDialog(self)
