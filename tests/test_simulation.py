@@ -1,8 +1,5 @@
-from pathlib import Path
-
 import random
 
-from logic.pbini_loader import load_pbini
 from logic.simulation import (
     BatterState,
     GameSimulation,
@@ -11,6 +8,7 @@ from logic.simulation import (
 )
 from models.player import Player
 from models.pitcher import Pitcher
+from tests.util.pbini_factory import load_config
 
 
 class MockRandom(random.Random):
@@ -76,12 +74,6 @@ def make_pitcher(
         fa=50,
         role=role,
     )
-
-
-def load_config():
-    return load_pbini(Path("logic/PBINI.txt"))
-
-
 def test_pinch_hitter_used():
     cfg = load_config()
     bench = make_player("bench", ph=80)
@@ -134,7 +126,7 @@ def test_steal_attempt_failure():
     runner_state = BatterState(runner)
     away.lineup_stats[runner.player_id] = runner_state
     away.bases[0] = runner_state
-    cfg["PlayBalance"].update({"pitchOutChanceBase": 0})
+    cfg.values.update({"pitchOutChanceBase": 0})
     # hnr success -> 0.0, steal failure -> 0.9, swing hit -> 0.0, post-hit steal attempt fails -> 1.0
     rng = MockRandom([0.0, 0.9, 0.0, 1.0])
     sim = GameSimulation(home, away, cfg, rng)

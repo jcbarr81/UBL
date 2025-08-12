@@ -16,7 +16,7 @@ from utils.player_loader import load_players_from_csv
 from utils.roster_loader import load_roster
 from logic.simulation import GameSimulation, TeamState, generate_boxscore
 from models.pitcher import Pitcher
-from logic.pbini_loader import load_pbini
+from logic.playbalance_config import PlayBalanceConfig
 
 
 class ExhibitionGameDialog(QDialog):
@@ -104,7 +104,9 @@ class ExhibitionGameDialog(QDialog):
         try:
             home_state = self._build_state(home_id)
             away_state = self._build_state(away_id)
-            cfg = load_pbini(os.path.join(os.path.dirname(__file__), "..", "logic", "PBINI.txt"))
+            cfg = PlayBalanceConfig.from_file(
+                os.path.join(os.path.dirname(__file__), "..", "logic", "PBINI.txt")
+            )
             sim = GameSimulation(home_state, away_state, cfg)
             sim.simulate_game()
             box = generate_boxscore(home_state, away_state)
