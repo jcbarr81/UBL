@@ -36,7 +36,7 @@ class LineupEditor(QDialog):
         self.field_overlay.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
         self.position_labels = {}
-        y_offset = 5
+        y_offset = 10
         position_coords = {
             "C": (160, 481), "1B": (225, 341), "2B": (220, 289), "SS": (98, 289),
             "3B": (62, 340), "LF": (55, 235), "CF": (158, 200), "RF": (230, 235), "DH": (275, 415)
