@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 
 from models.player import Player
 from models.pitcher import Pitcher
+from logic.defensive_manager import DefensiveManager
 
 
 @dataclass
@@ -71,6 +72,8 @@ class GameSimulation:
         self.away = away
         self.config = pbini.get("PlayBalance", {})
         self.rng = rng or random.Random()
+        self.defense = DefensiveManager(pbini, self.rng)
+        self.debug_log: List[str] = []
 
     # ------------------------------------------------------------------
     # Core loop helpers
@@ -98,6 +101,24 @@ class GameSimulation:
         """Play a single at-bat.  Returns the number of outs recorded."""
 
         self._maybe_change_pitcher(defense)
+
+        # Defensive decisions prior to the at-bat.  These mostly log the
+        # outcome for manual inspection in the exhibition dialog.  The
+        # simplified simulation does not yet modify gameplay based on them.
+        runner = offense.bases[0].player if offense.bases[0] else None
+        if self.defense.maybe_charge_bunt():
+            self.debug_log.append("Defense charges bunt")
+        if runner and self.defense.maybe_hold_runner(runner.sp):
+            self.debug_log.append("Defense holds runner")
+            if self.defense.maybe_pickoff():
+                self.debug_log.append("Pickoff attempt")
+            if self.defense.maybe_pitch_out():
+                self.debug_log.append("Pitch out")
+        pitch_around, ibb = self.defense.maybe_pitch_around()
+        if ibb:
+            self.debug_log.append("Intentional walk issued")
+        elif pitch_around:
+            self.debug_log.append("Pitch around")
 
         batter_idx = offense.batting_index % len(offense.lineup)
         batter = self._maybe_pinch_hit(offense, batter_idx)
