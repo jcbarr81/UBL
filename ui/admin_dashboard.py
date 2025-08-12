@@ -206,11 +206,40 @@ class AdminDashboard(QWidget):
             QMessageBox.warning(self, "Error", f"Failed to generate logos: {e}")
         finally:
             progress.close()
+        return
 
     def generate_player_avatars(self):
+        players = {p.player_id: p for p in load_players_from_csv("data/players.csv")}
+        teams = load_teams("data/teams.csv")
+
+        player_ids = set()
+        for t in teams:
+            try:
+                roster = load_roster(t.team_id)
+            except FileNotFoundError:
+                continue
+            player_ids.update(roster.act + roster.aaa + roster.low)
+
+        total = sum(1 for pid in player_ids if pid in players)
+        progress = QProgressDialog(
+            "Generating player avatars...",
+            None,
+            0,
+            total,
+            self,
+        )
+        progress.setWindowTitle("Generating Avatars")
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.setValue(0)
+        progress.show()
+
+        def cb(done: int, _total: int) -> None:
+            progress.setValue(done)
+            QApplication.processEvents()
+
         try:
             from utils.avatar_generator import generate_player_avatars as gen_avatars
-            out_dir = gen_avatars()
+            out_dir = gen_avatars(progress_callback=cb)
             QMessageBox.information(
                 self,
                 "Avatars Generated",
@@ -218,6 +247,9 @@ class AdminDashboard(QWidget):
             )
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to generate avatars: {e}")
+        finally:
+            progress.close()
+        return
 
     def open_exhibition_dialog(self):
         dialog = ExhibitionGameDialog(self)
