@@ -36,11 +36,16 @@ order,player_id,position
 `player_id` uses the internal IDs such as `P1000`.
 
 ## Development
-Install the dependencies (see `requirements.txt` if present) then run:
+Install the dependencies (see `requirements.txt`) then run:
 
 ```bash
 python main.py
 ```
+
+The `requirements.txt` file includes optional machine learning libraries used for
+advanced SDXL avatar generation (`diffusers`, `transformers`, `torch`,
+`opencv-python`, `diskcache`). If you only need the basic features you may omit
+those packages.
 
 ### Running tests
 Tests are located in the `tests/` directory and can be executed with:
