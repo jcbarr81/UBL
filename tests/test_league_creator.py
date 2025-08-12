@@ -129,5 +129,6 @@ def test_create_league_clears_users_and_rosters(tmp_path, monkeypatch):
 
     create_league(str(base_dir), divisions, "Test League")
 
-    assert not users_file.exists()
+    assert users_file.exists()
+    assert users_file.read_text() == "admin,pass,admin,\n"
     assert not stray.exists()

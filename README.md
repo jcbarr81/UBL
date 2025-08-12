@@ -32,3 +32,13 @@ Tests are located in the `tests/` directory and can be executed with:
 pytest
 ```
 
+### Default Admin Credentials
+When a new league is created or user accounts are cleared, the system rewrites
+`data/users.txt` to contain a single administrator account. Use these fallback
+credentials to log in after a reset:
+
+```
+username: admin
+password: pass
+```
+
