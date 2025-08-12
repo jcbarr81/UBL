@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Callable
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import math, random, hashlib, os
 
@@ -211,9 +211,18 @@ def save_logo(img: Image.Image, out_path: str, dpi: int=300):
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     img.save(out_path, format="PNG", dpi=(dpi,dpi))
 
-def batch_generate(teams: List[TeamSpec], out_dir: str, size: int=1024, font_path: Optional[str]=None):
+def batch_generate(
+    teams: List[TeamSpec],
+    out_dir: str,
+    size: int = 1024,
+    font_path: Optional[str] = None,
+    callback: Optional[Callable[[TeamSpec, str], None]] = None,
+):
     os.makedirs(out_dir, exist_ok=True)
     for t in teams:
         img = generate_logo(t, size=size, font_path=font_path)
         filename = f"{(t.abbrev or (t.location+' '+t.mascot)).replace(' ', '_').lower()}.png"
-        save_logo(img, os.path.join(out_dir, filename))
+        path = os.path.join(out_dir, filename)
+        save_logo(img, path)
+        if callback:
+            callback(t, path)

@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QMenuBar,
     QApplication,
+    QProgressDialog,
 )
 from PyQt6.QtCore import Qt
 from ui.team_entry_dialog import TeamEntryDialog
@@ -176,9 +177,26 @@ class AdminDashboard(QWidget):
         dialog.exec()
 
     def generate_team_logos(self):
+        teams = load_teams("data/teams.csv")
+        progress = QProgressDialog(
+            "Generating team logos...",
+            None,
+            0,
+            len(teams),
+            self,
+        )
+        progress.setWindowTitle("Generating Logos")
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.setValue(0)
+        progress.show()
+
+        def cb(done: int, total: int) -> None:
+            progress.setValue(done)
+            QApplication.processEvents()
+
         try:
             from utils.logo_generator import generate_team_logos
-            out_dir = generate_team_logos()
+            out_dir = generate_team_logos(progress_callback=cb)
             QMessageBox.information(
                 self,
                 "Logos Generated",
@@ -186,6 +204,8 @@ class AdminDashboard(QWidget):
             )
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to generate logos: {e}")
+        finally:
+            progress.close()
 
     def generate_player_avatars(self):
         try:
