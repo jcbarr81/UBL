@@ -14,7 +14,7 @@ import os
 from utils.team_loader import load_teams
 from utils.player_loader import load_players_from_csv
 from utils.roster_loader import load_roster
-from logic.simulation import GameSimulation, TeamState
+from logic.simulation import GameSimulation, TeamState, generate_boxscore
 from models.pitcher import Pitcher
 from logic.pbini_loader import load_pbini
 
@@ -107,7 +107,8 @@ class ExhibitionGameDialog(QDialog):
             cfg = load_pbini(os.path.join(os.path.dirname(__file__), "..", "logic", "PBINI.txt"))
             sim = GameSimulation(home_state, away_state, cfg)
             sim.simulate_game()
-            text = self._format_box_score(home_id, home_state, away_id, away_state)
+            box = generate_boxscore(home_state, away_state)
+            text = self._format_box_score(home_id, away_id, box)
             self.box_score.setPlainText(text)
         except FileNotFoundError as e:
             QMessageBox.warning(self, "Missing Data", str(e))
@@ -119,30 +120,31 @@ class ExhibitionGameDialog(QDialog):
     def _format_box_score(
         self,
         home_id: str,
-        home_state: TeamState,
         away_id: str,
-        away_state: TeamState,
+        box: Dict[str, Dict[str, object]],
     ) -> str:
         lines = [
             f"Exhibition Game: {self._teams.get(home_id, home_id)} vs {self._teams.get(away_id, away_id)}",
             "",
+            f"Final: {self._teams.get(away_id, away_id)} {box['away']['score']}, {self._teams.get(home_id, home_id)} {box['home']['score']}",
+            "",
         ]
 
-        def team_section(label: str, state: TeamState) -> None:
+        def team_section(label: str, key: str) -> None:
             lines.append(label)
             lines.append("BATTING")
-            for bs in state.lineup_stats.values():
-                p = bs.player
+            for entry in box[key]["batting"]:
+                p = entry["player"]
                 lines.append(
-                    f"{p.first_name} {p.last_name}: {bs.hits}-{bs.at_bats}, SB {bs.steals}"
+                    f"{p.first_name} {p.last_name}: {entry['h']}-{entry['ab']}, SB {entry['sb']}"
                 )
-            if state.pitcher_stats:
+            if box[key]["pitching"]:
                 lines.append("PITCHING")
-                for ps in state.pitcher_stats.values():
-                    p = ps.player
-                    lines.append(f"{p.first_name} {p.last_name}: {ps.pitches_thrown} pitches")
+                for entry in box[key]["pitching"]:
+                    p = entry["player"]
+                    lines.append(f"{p.first_name} {p.last_name}: {entry['pitches']} pitches")
             lines.append("")
 
-        team_section(f"Away - {self._teams.get(away_id, away_id)}", away_state)
-        team_section(f"Home - {self._teams.get(home_id, home_id)}", home_state)
+        team_section(f"Away - {self._teams.get(away_id, away_id)}", "away")
+        team_section(f"Home - {self._teams.get(home_id, home_id)}", "home")
         return "\n".join(lines)

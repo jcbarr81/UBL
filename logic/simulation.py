@@ -37,6 +37,8 @@ class TeamState:
     pitcher_stats: Dict[str, PitcherState] = field(default_factory=dict)
     batting_index: int = 0
     bases: List[Optional[BatterState]] = field(default_factory=lambda: [None, None, None])
+    runs: int = 0
+    inning_runs: List[int] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.pitchers:
@@ -85,10 +87,12 @@ class GameSimulation:
             self._play_half(self.home, self.away)  # Bottom half
 
     def _play_half(self, offense: TeamState, defense: TeamState) -> None:
+        start_runs = offense.runs
         outs = 0
         while outs < 3:
             outs += self.play_at_bat(offense, defense)
         offense.bases = [None, None, None]
+        offense.inning_runs.append(offense.runs - start_runs)
 
     def play_at_bat(self, offense: TeamState, defense: TeamState) -> int:
         """Play a single at-bat.  Returns the number of outs recorded."""
@@ -149,6 +153,7 @@ class GameSimulation:
     def _advance_runners(self, team: TeamState, batter_state: BatterState) -> None:
         b = team.bases
         if b[2]:
+            team.runs += 1
             b[2] = None
         if b[1]:
             b[2] = b[1]
@@ -211,9 +216,37 @@ class GameSimulation:
             defense.current_pitcher_state = state
 
 
+def generate_boxscore(home: TeamState, away: TeamState) -> Dict[str, Dict[str, object]]:
+    """Return a simplified box score for ``home`` and ``away`` teams."""
+
+    def team_section(team: TeamState) -> Dict[str, object]:
+        batting = [
+            {
+                "player": bs.player,
+                "ab": bs.at_bats,
+                "h": bs.hits,
+                "sb": bs.steals,
+            }
+            for bs in team.lineup_stats.values()
+        ]
+        pitching = [
+            {"player": ps.player, "pitches": ps.pitches_thrown}
+            for ps in team.pitcher_stats.values()
+        ]
+        return {
+            "score": team.runs,
+            "batting": batting,
+            "pitching": pitching,
+            "inning_runs": team.inning_runs,
+        }
+
+    return {"home": team_section(home), "away": team_section(away)}
+
+
 __all__ = [
     "BatterState",
     "PitcherState",
     "TeamState",
     "GameSimulation",
+    "generate_boxscore",
 ]

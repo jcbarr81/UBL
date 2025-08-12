@@ -3,7 +3,12 @@ from pathlib import Path
 import random
 
 from logic.pbini_loader import load_pbini
-from logic.simulation import BatterState, GameSimulation, TeamState
+from logic.simulation import (
+    BatterState,
+    GameSimulation,
+    TeamState,
+    generate_boxscore,
+)
 from models.player import Player
 from models.pitcher import Pitcher
 
@@ -165,3 +170,22 @@ def test_pitcher_not_changed():
     sim.play_at_bat(away, home)
     assert home.current_pitcher_state is original_state
     assert home.current_pitcher_state.player.player_id == "start"
+
+
+def test_run_tracking_and_boxscore():
+    cfg = load_config()
+    runner = make_player("run")
+    batter = make_player("bat", ph=80)
+    home = TeamState(lineup=[make_player("h1")], bench=[], pitchers=[make_pitcher("hp")])
+    away = TeamState(lineup=[batter], bench=[], pitchers=[make_pitcher("ap")])
+    runner_state = BatterState(runner)
+    away.lineup_stats[runner.player_id] = runner_state
+    away.bases[2] = runner_state
+    rng = MockRandom([0.0, 1.0, 1.0, 1.0, 1.0])
+    sim = GameSimulation(home, away, cfg, rng)
+    sim._play_half(away, home)
+    assert away.runs == 1
+    assert away.inning_runs == [1]
+    box = generate_boxscore(home, away)
+    assert box["away"]["score"] == 1
+    assert box["home"]["score"] == 0
