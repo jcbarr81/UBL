@@ -107,16 +107,14 @@ def generate_player_avatars(
 
 
 if __name__ == "__main__":  # pragma: no cover - CLI helper
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Generate player avatars")
-    parser.add_argument("--sdxl", action="store_true", help="Use SDXL model")
-    parser.add_argument("--controlnet", type=str, default=None)
-    parser.add_argument("--ip-adapter", type=str, default=None)
-    args = parser.parse_args()
+    def _print_progress(completed: int, total: int) -> None:
+        """Print simple progress information to the console."""
+        print(f"Generated {completed}/{total} avatars", end="\r", flush=True)
 
     generate_player_avatars(
-        use_sdxl=args.sdxl,
-        controlnet_path=args.controlnet,
-        ip_adapter_path=args.ip_adapter,
+        use_sdxl=True,
+        controlnet_path=None,
+        ip_adapter_path=None,
+        progress_callback=_print_progress,
     )
+    print()  # Newline after progress output
