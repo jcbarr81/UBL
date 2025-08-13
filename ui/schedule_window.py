@@ -1,8 +1,9 @@
-"""Simple dialog for displaying a placeholder schedule.
+"""Dialog window for displaying the league schedule.
 
-This window is intentionally lightweight: it merely shows a few hard-coded
-games in a table so that the rest of the application can hook into a schedule
-view.  Real schedule data can replace ``schedule_data`` in the future.
+The table is populated with a handful of hard-coded games so that other
+modules (for example, :mod:`ui.owner_dashboard`) have a schedule view to
+interact with. Once a dedicated scheduling service or database is
+available, ``schedule_data`` should be replaced with real information.
 """
 
 from PyQt6.QtWidgets import (
@@ -25,22 +26,27 @@ class ScheduleWindow(QDialog):
         except Exception:  # pragma: no cover - defensive: keep tests happy
             pass
 
+        # Build the main layout for the dialog
         layout = QVBoxLayout(self)
 
-        # TODO: Replace with real league data once available
+        # Placeholder schedule entries
+        # TODO: Replace with data from a scheduling service or database
         self.schedule_data = [
             ("2024-04-01", "Team A vs Team B"),
             ("2024-04-02", "Team C vs Team D"),
             ("2024-04-03", "Team A at Team C"),
         ]
 
-        # Build the table populated with the placeholder schedule
+        # Create the table and populate it with the placeholder schedule
         self.table = QTableWidget(len(self.schedule_data), 2)
         self.table.setHorizontalHeaderLabels(["Date", "Game"])
+
+        # Fill each row with date and matchup information
         for row, (date, game) in enumerate(self.schedule_data):
             self.table.setItem(row, 0, QTableWidgetItem(date))
             self.table.setItem(row, 1, QTableWidgetItem(game))
         self.table.resizeColumnsToContents()
 
+        # Add the populated table to the dialog
         layout.addWidget(self.table)
 
