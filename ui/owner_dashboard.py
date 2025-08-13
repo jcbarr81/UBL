@@ -33,6 +33,7 @@ from ui.position_players_dialog import PositionPlayersDialog
 from ui.pitchers_window import PitchersWindow
 from ui.transactions_window import TransactionsWindow
 from ui.team_settings_dialog import TeamSettingsDialog
+from ui.standings_window import StandingsWindow
 from utils.roster_loader import load_roster, save_roster
 from utils.player_loader import load_players_from_csv
 from utils.news_reader import read_latest_news
@@ -104,8 +105,9 @@ class OwnerDashboard(QWidget):
         trans_action.triggered.connect(self.open_transactions_page)
         settings_action.triggered.connect(self.open_team_settings)
         league_menu = menubar.addMenu("League")
-        league_menu.addAction("Standings")
+        self.standings_action = league_menu.addAction("Standings")
         league_menu.addAction("Schedule")
+        self.standings_action.triggered.connect(self.open_standings_window)
         main.setMenuBar(menubar)
 
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -267,6 +269,10 @@ class OwnerDashboard(QWidget):
 
     def open_transactions_page(self):
         TransactionsWindow().exec()
+
+    def open_standings_window(self):
+        """Open the league standings dialog."""
+        StandingsWindow(self).exec()
 
     def open_team_settings(self):
         if not self.team:
