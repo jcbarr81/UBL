@@ -3,12 +3,9 @@ import os
 import csv
 from utils.pitcher_role import get_role
 
-from utils.logger import logger
-
 class PitchingEditor(QDialog):
     def __init__(self, team_id):
         super().__init__()
-        logger.info("Pitching editor opened")
         self.team_id = team_id
         self.setWindowTitle("Pitching Staff Editor")
         self.setMinimumSize(500, 500)

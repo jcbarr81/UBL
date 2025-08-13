@@ -71,11 +71,8 @@ sys.modules['PyQt6.QtCore'] = qtcore
 sys.modules['PyQt6.QtGui'] = qtgui
 
 # ---- Imports after stubbing ----
-import importlib
 import ui.owner_dashboard as owner_dashboard
-importlib.reload(owner_dashboard)
 import ui.position_players_dialog as pp_dialog
-importlib.reload(pp_dialog)
 from models.pitcher import Pitcher
 from models.player import Player
 
@@ -84,8 +81,6 @@ od_helper = SimpleNamespace(calculate_age=lambda _: 0)
 ppd_helper = SimpleNamespace(_calculate_age=lambda _: 0)
 
 def test_pitcher_uses_pitching_stats_even_if_primary_not_pitcher():
-    owner_dashboard.Qt = qtcore.Qt
-    pp_dialog.Qt = qtcore.Qt
     pitcher = Pitcher(
         player_id='p1', first_name='Pitch', last_name='Er', birthdate='1990-01-01',
         height=72, weight=180, bats='R', primary_position='LF', other_positions=[], gf=10,
@@ -99,8 +94,6 @@ def test_pitcher_uses_pitching_stats_even_if_primary_not_pitcher():
         assert 'CH:' not in text
 
 def test_hitter_uses_hitting_stats_even_if_primary_pitcher():
-    owner_dashboard.Qt = qtcore.Qt
-    pp_dialog.Qt = qtcore.Qt
     hitter = Player(
         player_id='h1', first_name='Hit', last_name='Ter', birthdate='1991-02-02',
         height=70, weight=175, bats='L', primary_position='P', other_positions=[], gf=20,
