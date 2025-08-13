@@ -27,7 +27,7 @@ qtwidgets = types.ModuleType("PyQt6.QtWidgets")
 widget_names = [
     'QWidget','QLabel','QVBoxLayout','QTabWidget','QListWidget','QTextEdit','QPushButton',
     'QHBoxLayout','QComboBox','QMessageBox','QGroupBox','QMenuBar','QDialog','QFormLayout',
-    'QSpinBox','QGridLayout','QScrollArea','QLineEdit'
+    'QSpinBox','QGridLayout','QScrollArea','QLineEdit','QTableWidget','QTableWidgetItem'
 ]
 for name in widget_names:
     setattr(qtwidgets, name, Dummy)
