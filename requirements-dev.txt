@@ -5,3 +5,7 @@ transformers
 torch
 opencv-python
 diskcache
+pre-commit
+black
+flake8
+pytest
