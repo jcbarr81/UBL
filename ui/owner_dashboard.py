@@ -109,6 +109,7 @@ class OwnerDashboard(QWidget):
         self.standings_action = league_menu.addAction("Standings")
         self.schedule_action = league_menu.addAction("Schedule")
         self.standings_action.triggered.connect(self.open_standings_window)
+        # Allow owners to view the league schedule
         self.schedule_action.triggered.connect(self.open_schedule_window)
         main.setMenuBar(menubar)
 
