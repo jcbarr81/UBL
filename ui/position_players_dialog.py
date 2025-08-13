@@ -19,8 +19,6 @@ from models.base_player import BasePlayer
 from models.roster import Roster
 from utils.pitcher_role import get_role
 
-from utils.logger import logger
-
 
 class PositionPlayersDialog(QDialog):
     """Display all position players grouped by roster level and position."""
@@ -29,7 +27,6 @@ class PositionPlayersDialog(QDialog):
 
     def __init__(self, players: Dict[str, BasePlayer], roster: Roster, parent=None):
         super().__init__(parent)
-        logger.info("Position players dialog opened")
         self.players = players
         self.roster = roster
 

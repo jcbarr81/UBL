@@ -42,8 +42,6 @@ from utils.free_agent_finder import find_free_agents
 from utils.team_loader import load_teams, save_team_settings
 from utils.pitcher_role import get_role
 
-from utils.logger import logger
-
 
 def _hex_to_rgb(value: str) -> tuple[int, int, int]:
     """Convert ``#RRGGBB`` or ``#RGB`` strings to an (r, g, b) tuple."""
@@ -71,7 +69,6 @@ class OwnerDashboard(QWidget):
 
     def __init__(self, team_id: str):
         super().__init__()
-        logger.info("Owner dashboard opened")
         self.team_id = team_id
         self.unsaved_changes = False
 

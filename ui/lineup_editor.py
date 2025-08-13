@@ -5,13 +5,10 @@ import os
 import csv
 from utils.pitcher_role import get_role
 
-from utils.logger import logger
-
 class LineupEditor(QDialog):
     def __init__(self, team_id):
         self.team_id = team_id
         super().__init__()
-        logger.info("Lineup editor opened")
         self.setWindowTitle("Lineup Editor")
         self.setMinimumSize(900, 600)
 

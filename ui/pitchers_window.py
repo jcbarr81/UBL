@@ -19,15 +19,12 @@ from models.base_player import BasePlayer
 from models.roster import Roster
 from utils.pitcher_role import get_role
 
-from utils.logger import logger
-
 
 class PitchersWindow(QDialog):
     """Display all pitchers grouped by roster level with tabs for roles."""
 
     def __init__(self, players: Dict[str, BasePlayer], roster: Roster, parent=None):
         super().__init__(parent)
-        logger.info("Pitchers window opened")
         self.players = players
         self.roster = roster
 
