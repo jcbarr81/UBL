@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Dict, Iterable
 
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QDialog,
     QGroupBox,
@@ -29,6 +30,8 @@ class PitchersWindow(QDialog):
         self.roster = roster
 
         self.setWindowTitle("Pitchers")
+        # Use a monospace font so player stats align consistently
+        self.setFont(QFont("Courier New", 9))
 
         layout = QVBoxLayout()
         layout.addWidget(self._build_level_section("Active (ACT)", roster.act))
