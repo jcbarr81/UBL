@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import (
     QDialog,
+    QLabel,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -12,10 +13,13 @@ class StandingsWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Standings")
-
         layout = QVBoxLayout(self)
 
+        # Using placeholder data
+        layout.addWidget(QLabel("Using placeholder data"))
+
         table = QTableWidget()
+        # TODO: Replace with real league data
         data = [
             ("Team A", 10, 5),
             ("Team B", 8, 7),
