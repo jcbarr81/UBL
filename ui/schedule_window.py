@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import (
     QDialog,
+    QLabel,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -19,6 +20,10 @@ class ScheduleWindow(QDialog):
 
         layout = QVBoxLayout(self)
 
+        # Using placeholder data
+        layout.addWidget(QLabel("Using placeholder data"))
+
+        # TODO: Replace with real league data
         # Default schedule data used for placeholder view
         self.schedule_data = [
             ("2024-04-01", "Team A vs Team B"),
