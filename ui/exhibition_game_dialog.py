@@ -18,12 +18,15 @@ from logic.simulation import GameSimulation, TeamState, generate_boxscore
 from models.pitcher import Pitcher
 from logic.playbalance_config import PlayBalanceConfig
 
+from utils.logger import logger
+
 
 class ExhibitionGameDialog(QDialog):
     """Dialog to select teams and simulate an exhibition game."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        logger.info("Exhibition game dialog opened")
         self.setWindowTitle("Simulate Exhibition Game")
 
         layout = QVBoxLayout()

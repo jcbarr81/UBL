@@ -168,7 +168,7 @@ import ui.owner_dashboard as owner_dashboard
 importlib.reload(owner_dashboard)
 
 
-def test_schedule_action_opens_dialog_and_populates_table(monkeypatch):
+def test_schedule_action_opens_dialog_and_populates_table(monkeypatch, caplog):
     opened = {}
 
     orig_init = schedule_window.ScheduleWindow.__init__
@@ -187,11 +187,13 @@ def test_schedule_action_opens_dialog_and_populates_table(monkeypatch):
         self.schedule_action.triggered.connect(self.open_schedule_window)
     monkeypatch.setattr(owner_dashboard.OwnerDashboard, '__init__', fake_init)
 
-    dashboard = owner_dashboard.OwnerDashboard('DRO')
-    dashboard.schedule_action.trigger()
+    with caplog.at_level("INFO"):
+        dashboard = owner_dashboard.OwnerDashboard('DRO')
+        dashboard.schedule_action.trigger()
 
     assert opened.get('executed')
     window = opened['window']
     assert window.table.item(0, 0).text() == '2024-04-01'
     assert window.table.item(0, 1).text() == 'Team A vs Team B'
+    assert "Schedule window opened" in caplog.text
 

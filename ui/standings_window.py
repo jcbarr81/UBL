@@ -6,12 +6,15 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
+from utils.logger import logger
+
 
 class StandingsWindow(QDialog):
     """Simple dialog displaying dummy league standings."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        logger.info("Standings window opened")
         self.setWindowTitle("Standings")
         layout = QVBoxLayout(self)
 
