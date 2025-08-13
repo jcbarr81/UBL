@@ -5,11 +5,14 @@ from PyQt6.QtCore import Qt
 
 from ui.login_window import LoginWindow
 
+from utils.logger import logger
+
 class SplashScreen(QWidget):
     """Initial splash screen displaying the UBL logo and start button."""
 
     def __init__(self):
         super().__init__()
+        logger.info("Splash screen opened")
         self.setWindowTitle("UBL")
 
         layout = QVBoxLayout()

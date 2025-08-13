@@ -17,12 +17,15 @@ from PyQt6.QtWidgets import (
 
 from models.base_player import BasePlayer
 
+from utils.logger import logger
+
 
 class PlayerProfileDialog(QDialog):
     """Display basic information, current ratings and stats for a player."""
 
     def __init__(self, player: BasePlayer, parent=None):
         super().__init__(parent)
+        logger.info("Player profile dialog opened")
         self.player = player
         self.setWindowTitle(f"{player.first_name} {player.last_name}")
 

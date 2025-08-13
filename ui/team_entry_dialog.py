@@ -10,12 +10,15 @@ from PyQt6.QtWidgets import (
 
 from logic.team_name_generator import random_team
 
+from utils.logger import logger
+
 
 class TeamEntryDialog(QDialog):
     """Dialog for entering team cities and nicknames."""
 
     def __init__(self, divisions, teams_per_div, parent=None):
         super().__init__(parent)
+        logger.info("Team entry dialog opened")
         self.setWindowTitle("Enter Teams")
         self._inputs = {}
 

@@ -12,12 +12,15 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
+from utils.logger import logger
+
 
 class ScheduleWindow(QDialog):
     """Dialog displaying a basic placeholder schedule."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        logger.info("Schedule window opened")
 
         # Set the window title if the underlying widget system supports it.
         try:  # pragma: no cover - some test stubs omit this method

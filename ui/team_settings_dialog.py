@@ -10,12 +10,15 @@ from PyQt6.QtWidgets import (
 
 from data.ballparks import BALLPARKS
 
+from utils.logger import logger
+
 
 class TeamSettingsDialog(QDialog):
     """Dialog allowing an owner to configure basic team properties."""
 
     def __init__(self, team, parent=None):
         super().__init__(parent)
+        logger.info("Team settings dialog opened")
         self.team = team
         self.setWindowTitle("Team Settings")
 

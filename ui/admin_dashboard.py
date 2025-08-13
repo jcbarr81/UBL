@@ -28,9 +28,12 @@ import csv
 import os
 from logic.league_creator import create_league
 
+from utils.logger import logger
+
 class AdminDashboard(QWidget):
     def __init__(self):
         super().__init__()
+        logger.info("Admin dashboard opened")
         self.setWindowTitle("Admin Dashboard")
         self.setGeometry(200, 200, 500, 300)
 

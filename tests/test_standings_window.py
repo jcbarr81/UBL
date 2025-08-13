@@ -129,7 +129,11 @@ qtgui.QPixmap = Dummy
 sys.modules['PyQt6.QtGui'] = qtgui
 
 # ---- Imports after stubbing ----
+import importlib
 import ui.owner_dashboard as owner_dashboard
+importlib.reload(owner_dashboard)
+import ui.standings_window as standings_window
+importlib.reload(standings_window)
 
 
 def test_standings_action_opens_dialog(monkeypatch):
@@ -154,3 +158,31 @@ def test_standings_action_opens_dialog(monkeypatch):
     dashboard.standings_action.trigger()
 
     assert opened.get("shown")
+
+
+def test_standings_window_logs_on_init(monkeypatch, caplog):
+    class DummyTable:
+        def __init__(self, *a, **k):
+            pass
+        def setColumnCount(self, n):
+            pass
+        def setRowCount(self, n):
+            pass
+        def setHorizontalHeaderLabels(self, labels):
+            pass
+        def setItem(self, r, c, item):
+            pass
+        def resizeColumnsToContents(self):
+            pass
+
+    class DummyItem:
+        def __init__(self, *a, **k):
+            pass
+
+    monkeypatch.setattr(standings_window, "QTableWidget", DummyTable)
+    monkeypatch.setattr(standings_window, "QTableWidgetItem", DummyItem)
+    monkeypatch.setattr(standings_window.QDialog, "setWindowTitle", lambda self, *a, **k: None, raising=False)
+
+    with caplog.at_level("INFO"):
+        standings_window.StandingsWindow()
+    assert "Standings window opened" in caplog.text
