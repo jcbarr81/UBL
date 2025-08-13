@@ -1,5 +1,8 @@
+"""Tests for the placeholder schedule dialog."""
+
 import sys, types, os
 
+# Ensure Qt runs in a headless environment
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 # ---- Stub PyQt6 modules ----
